@@ -1,9 +1,11 @@
 package com.antigravity.cnvoiceintercept.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -38,6 +40,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -82,12 +85,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.antigravity.cnvoiceintercept.BuildConfig
+import com.antigravity.cnvoiceintercept.R
 import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 import com.antigravity.cnvoiceintercept.intercept.AssistantNotificationListener
@@ -98,6 +103,7 @@ import com.antigravity.cnvoiceintercept.trigger.TriggerActivity
 import com.antigravity.cnvoiceintercept.update.UpdateChecker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Locale
 import kotlin.math.roundToLong
 
 data class InstalledAppItem(
@@ -110,6 +116,24 @@ class MainActivity : ComponentActivity() {
     private val requestNotifPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { /* no-op */ }
+
+    override fun attachBaseContext(newBase: Context) {
+        val lang = AppPrefs.getAppLanguage(newBase)
+        val locale = when (lang) {
+            "zh-TW" -> Locale.TRADITIONAL_CHINESE
+            "zh-CN" -> Locale.SIMPLIFIED_CHINESE
+            "en" -> Locale.ENGLISH
+            else -> null
+        }
+        if (locale != null) {
+            Locale.setDefault(locale)
+            val config = Configuration(newBase.resources.configuration)
+            config.setLocale(locale)
+            super.attachBaseContext(newBase.createConfigurationContext(config))
+        } else {
+            super.attachBaseContext(newBase)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -194,13 +218,14 @@ fun MainScreen() {
     var launchMode by remember { mutableStateOf(AppPrefs.getLaunchMode(context)) }
     var customAiPkg by remember { mutableStateOf(AppPrefs.getCustomAiPackage(context)) }
     var customAiLabel by remember { mutableStateOf(AppPrefs.getCustomAiLabel(context)) }
+    var currentLang by remember { mutableStateOf(AppPrefs.getAppLanguage(context)) }
 
     var showAppPickerDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
+    var showLangDialog by remember { mutableStateOf(false) }
     var updateInfoDialog by remember { mutableStateOf<UpdateChecker.UpdateInfo?>(null) }
     var isCheckingUpdate by remember { mutableStateOf(false) }
 
-    // 啟動時自動檢查 GitHub 是否有新版本，若有新版則推播通知並彈窗提醒
     LaunchedEffect(Unit) {
         UpdateChecker.checkForUpdate(context, sendNotificationIfNew = true) { result ->
             result.onSuccess { info ->
@@ -217,19 +242,24 @@ fun MainScreen() {
             LargeTopAppBar(
                 title = {
                     Column {
-                        Text("陸版語音呼喚攔截", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold)
                         Text(
-                            "vivo / OPPO / 小米 CN ROM 語音喚醒秒切 Gemini",
+                            stringResource(R.string.app_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
                 actions = {
-                    TextButton(onClick = { showAboutDialog = true }) {
-                        Icon(Icons.Default.Info, contentDescription = "關於我")
+                    TextButton(onClick = { showLangDialog = true }) {
+                        Icon(Icons.Default.Language, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("關於")
+                        Text(stringResource(R.string.btn_lang_short))
+                    }
+                    TextButton(onClick = { showAboutDialog = true }) {
+                        Icon(Icons.Default.Info, contentDescription = null)
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.btn_about_short))
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -264,14 +294,14 @@ fun MainScreen() {
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "步驟 1：確認系統預設數位助理",
+                            stringResource(R.string.step1_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                     Text(
-                        "使用 VISTrigger 喚起 Gemini 圈選／浮層視窗前，請先在系統設定中將「預設數位助理應用程式」設為 Google（並於 Google 內選用 Gemini）。",
+                        stringResource(R.string.step1_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
@@ -281,7 +311,7 @@ fun MainScreen() {
                     ) {
                         Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("開啟 Android 系統預設數位助理設定頁")
+                        Text(stringResource(R.string.step1_btn))
                     }
                 }
             }
@@ -304,7 +334,7 @@ fun MainScreen() {
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "步驟 2：Shizuku 連線與一鍵 ADB 權限",
+                            stringResource(R.string.step2_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -317,21 +347,31 @@ fun MainScreen() {
                     ) {
                         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                "• Shizuku 服務：${if (shizukuStatus.binderAlive) "運行中" else "未啟動"}  |  " +
-                                    "授權：${if (shizukuStatus.permissionGranted) "已授權" else "未授權"}",
+                                stringResource(
+                                    R.string.status_shizuku_service,
+                                    if (shizukuStatus.binderAlive) stringResource(R.string.status_running) else stringResource(R.string.status_stopped),
+                                    if (shizukuStatus.permissionGranted) stringResource(R.string.status_granted) else stringResource(R.string.status_not_granted)
+                                ),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Text(
-                                "• UserService (UID 2000)：${if (shizukuStatus.serviceBound) "已連線" else "未連線"}",
+                                stringResource(
+                                    R.string.status_user_service,
+                                    if (shizukuStatus.serviceBound) stringResource(R.string.status_connected) else stringResource(R.string.status_disconnected)
+                                ),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Text(
-                                "• 語音收音通知監聽權限：${if (notifListenerEnabled) "已開啟" else "未開啟"}",
+                                stringResource(
+                                    R.string.status_notif_listener,
+                                    if (notifListenerEnabled) stringResource(R.string.status_enabled) else stringResource(R.string.status_disabled)
+                                ),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }
                     }
 
+                    val toastGrantedMsg = stringResource(R.string.toast_granted_all_adb)
                     Button(
                         onClick = {
                             if (!shizukuStatus.permissionGranted) {
@@ -340,11 +380,7 @@ fun MainScreen() {
                                 ShizukuController.refreshStateAndBind()
                                 ShizukuController.grantAllRequiredPermissions(context) {
                                     notifListenerEnabled = AssistantNotificationListener.isEnabled(context)
-                                    Toast.makeText(
-                                        context,
-                                        "已透過 Shizuku 自動授予所有所需 ADB 權限！",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    Toast.makeText(context, toastGrantedMsg, Toast.LENGTH_SHORT).show()
                                 }
                             }
                         },
@@ -353,8 +389,8 @@ fun MainScreen() {
                         Icon(Icons.Default.Build, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            if (!shizukuStatus.permissionGranted) "1. 先點此請求 Shizuku 授權"
-                            else "⚡ 一鍵透過 Shizuku 授予所有 ADB 權限"
+                            if (!shizukuStatus.permissionGranted) stringResource(R.string.btn_request_shizuku)
+                            else stringResource(R.string.btn_grant_all_adb)
                         )
                     }
 
@@ -365,7 +401,7 @@ fun MainScreen() {
                             },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("手動檢查通知權限", fontSize = 12.sp)
+                            Text(stringResource(R.string.btn_manual_notif_settings), fontSize = 12.sp)
                         }
                         OutlinedButton(
                             onClick = {
@@ -376,7 +412,7 @@ fun MainScreen() {
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("重新整理狀態", fontSize = 12.sp)
+                            Text(stringResource(R.string.btn_refresh_status), fontSize = 12.sp)
                         }
                     }
                 }
@@ -395,7 +431,7 @@ fun MainScreen() {
                         Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "攔截後啟動的目標 AI 助理",
+                            stringResource(R.string.ai_section_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -426,9 +462,9 @@ fun MainScreen() {
                                 }
                             )
                             Column(modifier = Modifier.padding(start = 8.dp)) {
-                                Text("Gemini 圈選／浮層視窗 (VISTrigger 模式 - 預設推薦)", fontWeight = FontWeight.SemiBold)
+                                Text(stringResource(R.string.ai_vis_title), fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    "直接呼叫系統 IVoiceInteractionManagerService.showSessionFromSession，不跳離當前畫面直接彈出 Gemini 浮層與圈選搜尋。",
+                                    stringResource(R.string.ai_vis_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -459,9 +495,9 @@ fun MainScreen() {
                                     }
                                 )
                                 Column(modifier = Modifier.padding(start = 8.dp)) {
-                                    Text("改為開啟指定的 AI App", fontWeight = FontWeight.SemiBold)
+                                    Text(stringResource(R.string.ai_custom_title), fontWeight = FontWeight.SemiBold)
                                     Text(
-                                        "目前選擇：$customAiLabel ($customAiPkg)",
+                                        stringResource(R.string.ai_custom_current, customAiLabel, customAiPkg),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -470,14 +506,14 @@ fun MainScreen() {
 
                             if (launchMode == AppPrefs.LAUNCH_MODE_CUSTOM_APP) {
                                 Spacer(Modifier.height(8.dp))
-                                Text("快速選擇常見 AI App：", style = MaterialTheme.typography.labelMedium)
+                                Text(stringResource(R.string.ai_quick_pick_label), style = MaterialTheme.typography.labelMedium)
                                 val aiPresets = listOf(
                                     "Google Gemini" to "com.google.android.apps.bard",
                                     "ChatGPT" to "com.openai.chatgpt",
                                     "Claude" to "com.anthropic.claude",
                                     "Perplexity" to "ai.perplexity.app.android",
                                     "Copilot" to "com.microsoft.copilot",
-                                    "豆包 Doubao" to "com.larus.nova",
+                                    "Doubao 豆包" to "com.larus.nova",
                                     "Kimi" to "com.moonshot.kimichat"
                                 )
                                 FlowRow(
@@ -502,7 +538,7 @@ fun MainScreen() {
                                     onClick = { showAppPickerDialog = true },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("📱 從手機已安裝的所有 App 中挑選...")
+                                    Text(stringResource(R.string.btn_pick_installed_app))
                                 }
                             }
                         }
@@ -523,7 +559,7 @@ fun MainScreen() {
                         Icon(Icons.Default.Mic, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            "語音呼喚攔截控制",
+                            stringResource(R.string.control_section_title),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -535,7 +571,7 @@ fun MainScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            "💡 智慧區分語音與手動開啟：本工具僅在「語音呼喊喚醒」產生收音狀態通知（如『收音 (藍心小V)』）時才攔截並強制關閉；您平時在桌面手動點開陸版助理 App 打字或使用內建功能時，完全不會被干涉！",
+                            stringResource(R.string.control_voice_only_notice),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
                             modifier = Modifier.padding(12.dp)
@@ -543,8 +579,8 @@ fun MainScreen() {
                     }
 
                     SwitchRow(
-                        title = "啟用語音呼喚攔截",
-                        subtitle = "語音呼叫陸版助理時，強制關閉陸版助理並啟動目標 AI",
+                        title = stringResource(R.string.switch_enable_title),
+                        subtitle = stringResource(R.string.switch_enable_sub),
                         checked = enabled,
                         onCheckedChange = {
                             enabled = it
@@ -554,8 +590,8 @@ fun MainScreen() {
                     )
 
                     SwitchRow(
-                        title = "強制關閉前先送出返回鍵",
-                        subtitle = "比照原 MacroDroid 腳本先收起浮層再強制停止",
+                        title = stringResource(R.string.switch_back_title),
+                        subtitle = stringResource(R.string.switch_back_sub),
                         checked = pressBackFirst,
                         onCheckedChange = {
                             pressBackFirst = it
@@ -564,8 +600,8 @@ fun MainScreen() {
                     )
 
                     SwitchRow(
-                        title = "喚起 Gemini 時震動回饋",
-                        subtitle = "觸發成功時提供清脆觸覺點擊震動",
+                        title = stringResource(R.string.switch_vibrate_title),
+                        subtitle = stringResource(R.string.switch_vibrate_sub),
                         checked = vibrate,
                         onCheckedChange = {
                             vibrate = it
@@ -584,7 +620,7 @@ fun MainScreen() {
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("測試 VISTrigger")
+                            Text(stringResource(R.string.btn_test_vis))
                         }
                         FilledTonalButton(
                             modifier = Modifier.weight(1f),
@@ -592,7 +628,7 @@ fun MainScreen() {
                                 InterceptCoordinator.runManualTestPipeline(context)
                             }
                         ) {
-                            Text("測試完整攔截流程")
+                            Text(stringResource(R.string.btn_test_full))
                         }
                     }
                 }
@@ -608,12 +644,12 @@ fun MainScreen() {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        "陸版 ROM 廠牌預設與關鍵字設定",
+                        stringResource(R.string.preset_section_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text("一鍵套用廠牌預設值：", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(R.string.preset_quick_label), style = MaterialTheme.typography.labelMedium)
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -625,34 +661,34 @@ fun MainScreen() {
                                 AppPrefs.setTargetPackagesRaw(context, targetPackages)
                                 AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
                             },
-                            label = { Text("三廠牌通用預設") }
+                            label = { Text(stringResource(R.string.preset_all)) }
                         )
                         AssistChip(
                             onClick = {
                                 targetPackages = "com.vivo.ai.copilot,com.vivo.agent,com.vivo.aiservice"
-                                notifKeywords = "收音,藍心小V,正在傾聽,正在聆聽"
+                                notifKeywords = "收音,藍心小V,蓝心小V,正在傾聽,正在聆聽,正在听"
                                 AppPrefs.setTargetPackagesRaw(context, targetPackages)
                                 AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
                             },
-                            label = { Text("vivo (藍心小V)") }
+                            label = { Text(stringResource(R.string.preset_vivo)) }
                         )
                         AssistChip(
                             onClick = {
                                 targetPackages = "com.heytap.speechassist,com.coloros.speechassist,com.oplus.aiunit"
-                                notifKeywords = "收音,小布,正在傾聽,正在聆聽,Breeno"
+                                notifKeywords = "收音,小布,正在傾聽,正在聆聽,正在听,Breeno"
                                 AppPrefs.setTargetPackagesRaw(context, targetPackages)
                                 AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
                             },
-                            label = { Text("OPPO (小布助手)") }
+                            label = { Text(stringResource(R.string.preset_oppo)) }
                         )
                         AssistChip(
                             onClick = {
                                 targetPackages = "com.miui.voiceassist,com.xiaomi.voiceassistant,com.miui.voicetrigger"
-                                notifKeywords = "收音,小愛,小爱,正在傾聽,正在聆聽"
+                                notifKeywords = "收音,小愛,小爱,正在傾聽,正在聆聽,正在听"
                                 AppPrefs.setTargetPackagesRaw(context, targetPackages)
                                 AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
                             },
-                            label = { Text("小米 (小愛同學)") }
+                            label = { Text(stringResource(R.string.preset_xiaomi)) }
                         )
                     }
 
@@ -662,7 +698,7 @@ fun MainScreen() {
                             notifKeywords = it
                             AppPrefs.setNotifKeywordsRaw(context, it)
                         },
-                        label = { Text("語音收音通知關鍵字 (逗號分隔)") },
+                        label = { Text(stringResource(R.string.field_notif_keywords)) },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -672,11 +708,14 @@ fun MainScreen() {
                             targetPackages = it
                             AppPrefs.setTargetPackagesRaw(context, it)
                         },
-                        label = { Text("強制關閉陸版助理套件名 (逗號分隔)") },
+                        label = { Text(stringResource(R.string.field_target_packages)) },
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("強制關閉後延遲啟動 AI：${delayMs.roundToLong()} ms", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.slider_delay_label, delayMs.roundToLong()),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                     Slider(
                         value = delayMs,
                         onValueChange = { delayMs = it },
@@ -700,14 +739,18 @@ fun MainScreen() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("攔截執行紀錄", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(R.string.log_section_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                         TextButton(onClick = { InterceptLogStore.clear() }) {
-                            Text("清除")
+                            Text(stringResource(R.string.btn_clear))
                         }
                     }
                     if (logs.isEmpty()) {
                         Text(
-                            "尚無攔截紀錄",
+                            stringResource(R.string.log_empty),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -728,9 +771,13 @@ fun MainScreen() {
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("關於與版本更新", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Text(
-                        "目前版本：v${BuildConfig.VERSION_NAME}（固定簽章，可直接覆蓋更新）",
+                        stringResource(R.string.about_section_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        stringResource(R.string.about_version_fixed, BuildConfig.VERSION_NAME),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -741,7 +788,7 @@ fun MainScreen() {
                         ) {
                             Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("關於我 / GitHub")
+                            Text(stringResource(R.string.btn_about_github))
                         }
                         Button(
                             onClick = {
@@ -754,14 +801,14 @@ fun MainScreen() {
                                         } else {
                                             Toast.makeText(
                                                 context,
-                                                "目前已是最新版本 (v${info.currentVersion})",
+                                                context.getString(R.string.toast_latest_version, info.currentVersion),
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
                                     }.onFailure { err ->
                                         Toast.makeText(
                                             context,
-                                            "檢查更新失敗：${err.message}",
+                                            context.getString(R.string.toast_update_failed, err.message ?: ""),
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -772,7 +819,10 @@ fun MainScreen() {
                         ) {
                             Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text(if (isCheckingUpdate) "檢查中..." else "檢查 APK 更新")
+                            Text(
+                                if (isCheckingUpdate) stringResource(R.string.btn_checking_update)
+                                else stringResource(R.string.btn_check_update)
+                            )
                         }
                     }
                 }
@@ -780,6 +830,56 @@ fun MainScreen() {
 
             Spacer(modifier = Modifier.height(28.dp))
         }
+    }
+
+    // 彈窗 0：語言切換對話框 (繁體中文 / 简体中文 / English / 跟隨系統)
+    if (showLangDialog) {
+        val options = listOf(
+            "system" to stringResource(R.string.lang_system),
+            "zh-TW" to stringResource(R.string.lang_zh_tw),
+            "zh-CN" to stringResource(R.string.lang_zh_cn),
+            "en" to stringResource(R.string.lang_en)
+        )
+        AlertDialog(
+            onDismissRequest = { showLangDialog = false },
+            icon = { Icon(Icons.Default.Language, contentDescription = null) },
+            title = { Text(stringResource(R.string.dialog_lang_title)) },
+            text = {
+                Column {
+                    options.forEach { (code, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    currentLang = code
+                                    AppPrefs.setAppLanguage(context, code)
+                                    showLangDialog = false
+                                    (context as? Activity)?.recreate()
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = currentLang == code,
+                                onClick = {
+                                    currentLang = code
+                                    AppPrefs.setAppLanguage(context, code)
+                                    showLangDialog = false
+                                    (context as? Activity)?.recreate()
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(label)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLangDialog = false }) {
+                    Text(stringResource(R.string.btn_close))
+                }
+            }
+        )
     }
 
     // 彈窗 1：從手機已安裝 App 挑選 AI App
@@ -795,20 +895,15 @@ fun MainScreen() {
         )
     }
 
-    // 彈窗 2：關於我
+    // 彈窗 2：關於我（中英文雙語說明 + GitHub 連結）
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
             icon = { Icon(Icons.Default.Info, contentDescription = null) },
-            title = { Text("關於 陸版語音呼喚攔截") },
+            title = { Text(stringResource(R.string.dialog_about_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("作者：dx9901mk5", fontWeight = FontWeight.SemiBold)
-                    Text("版本：v${BuildConfig.VERSION_NAME}")
-                    Text(
-                        "專為 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陸版 CN ROM 打造的語音喚醒攔截工具。\n\n" +
-                            "當透過語音呼喊陸版助理時，利用 Shizuku 系統級權限瞬間強制關閉陸版助理並透過 VISTrigger 喚起 Gemini 圈選／浮層視窗（或自訂 AI App），且不干涉平時手動點開陸版助理使用。"
-                    )
+                    Text(stringResource(R.string.dialog_about_body, BuildConfig.VERSION_NAME))
                 }
             },
             confirmButton = {
@@ -818,12 +913,12 @@ fun MainScreen() {
                         Intent(Intent.ACTION_VIEW, Uri.parse(UpdateChecker.GITHUB_REPO_URL))
                     )
                 }) {
-                    Text("前往 GitHub 專案頁")
+                    Text(stringResource(R.string.btn_open_github))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAboutDialog = false }) {
-                    Text("關閉")
+                    Text(stringResource(R.string.btn_close))
                 }
             }
         )
@@ -834,14 +929,17 @@ fun MainScreen() {
         AlertDialog(
             onDismissRequest = { updateInfoDialog = null },
             icon = { Icon(Icons.Default.SystemUpdate, contentDescription = null) },
-            title = { Text("發現新版本 v${info.latestVersion}") },
+            title = { Text(stringResource(R.string.dialog_update_title, info.latestVersion)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("目前版本：v${info.currentVersion} → 最新版本：v${info.latestVersion}")
-                    Text("本 App 採用固定簽名，下載新版 APK 後可直接覆蓋安裝（推薦搭配支援 Shizuku 的 InstallerX Revived 或 ZArchiver 安裝）。")
+                    Text(stringResource(R.string.dialog_update_version, info.currentVersion, info.latestVersion))
+                    Text(stringResource(R.string.dialog_update_desc))
                     if (info.releaseNotes.isNotBlank()) {
                         HorizontalDivider()
-                        Text("更新內容：\n${info.releaseNotes}", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            stringResource(R.string.dialog_update_notes, info.releaseNotes),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
             },
@@ -851,12 +949,12 @@ fun MainScreen() {
                     updateInfoDialog = null
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                 }) {
-                    Text("立即下載更新")
+                    Text(stringResource(R.string.btn_download_now))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { updateInfoDialog = null }) {
-                    Text("稍後再說")
+                    Text(stringResource(R.string.btn_later))
                 }
             }
         )
@@ -902,18 +1000,18 @@ private fun InstalledAppPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("選擇要啟動的 AI App") },
+        title = { Text(stringResource(R.string.dialog_pick_app_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    label = { Text("搜尋 App 名稱或套件名") },
+                    label = { Text(stringResource(R.string.dialog_pick_app_search)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 if (loading) {
-                    Text("正在讀取已安裝 App 清單...", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.dialog_pick_app_loading), style = MaterialTheme.typography.bodySmall)
                 } else {
                     LazyColumn(
                         modifier = Modifier
@@ -942,7 +1040,7 @@ private fun InstalledAppPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(R.string.btn_cancel))
             }
         }
     )

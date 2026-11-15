@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.antigravity.cnvoiceintercept.R
 import com.antigravity.cnvoiceintercept.shizuku.ShizukuController
 import com.antigravity.cnvoiceintercept.ui.MainActivity
 
@@ -33,10 +34,9 @@ class InterceptKeepAliveService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "語音攔截常駐服務",
+                getString(R.string.fgs_channel_name),
                 NotificationManager.IMPORTANCE_MIN
             ).apply {
-                description = "維持 Shizuku 深層攔截連線與背景即時切換"
                 setShowBadge(false)
             }
             val nm = getSystemService(NotificationManager::class.java)
@@ -53,8 +53,8 @@ class InterceptKeepAliveService : Service() {
         )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
-            .setContentTitle("陸版語音攔截運作中")
-            .setContentText("待機攔截陸版語音助理並切換至 Gemini")
+            .setContentTitle(getString(R.string.fgs_notif_title))
+            .setContentText(getString(R.string.fgs_notif_text))
             .setOngoing(true)
             .setSilent(true)
             .setContentIntent(openIntent)

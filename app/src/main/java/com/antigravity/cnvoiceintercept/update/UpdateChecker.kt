@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.core.app.NotificationCompat
 import com.antigravity.cnvoiceintercept.BuildConfig
+import com.antigravity.cnvoiceintercept.R
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -54,7 +55,7 @@ object UpdateChecker {
                 val code = conn.responseCode
                 if (code !in 200..299) {
                     mainHandler.post {
-                        onResult(Result.failure(RuntimeException("GitHub API 回應狀態碼：$code")))
+                        onResult(Result.failure(RuntimeException("HTTP $code")))
                     }
                     return@Thread
                 }
@@ -106,11 +107,9 @@ object UpdateChecker {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val ch = NotificationChannel(
                     UPDATE_CHANNEL_ID,
-                    "版本更新通知",
+                    context.getString(R.string.update_channel_name),
                     NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    description = "當 GitHub 發佈新版 APK 時通知提醒"
-                }
+                )
                 nm.createNotificationChannel(ch)
             }
 
@@ -127,8 +126,8 @@ object UpdateChecker {
 
             val notif = NotificationCompat.Builder(context, UPDATE_CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setContentTitle("發現新版本 v${info.latestVersion}")
-                .setContentText("目前版本 v${info.currentVersion}，點擊下載更新（固定簽名可直接覆蓋安裝）")
+                .setContentTitle(context.getString(R.string.update_notif_title, info.latestVersion))
+                .setContentText(context.getString(R.string.update_notif_text, info.currentVersion))
                 .setAutoCancel(true)
                 .setContentIntent(pi)
                 .build()

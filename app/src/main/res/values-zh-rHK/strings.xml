@@ -1,0 +1,100 @@
+<resources>
+    <string name="app_name">陸版語音攔截</string>
+    <string name="app_subtitle">vivo / OPPO / 小米 CN ROM 語音喚醒秒切 Gemini</string>
+    <string name="notification_listener_label">陸版語音助理攔截監聽</string>
+    <string name="trigger_failed">VISTrigger 喚起失敗，請確認已將 Google 設為預設數位助理且已選用 Gemini</string>
+
+    <string name="btn_about_short">關於</string>
+    <string name="btn_lang_short">語言</string>
+    <string name="dialog_lang_title">介面語言 / Interface Language</string>
+    <string name="lang_system">跟隨系統 (Follow System)</string>
+    <string name="lang_zh_tw">繁體中文</string>
+    <string name="lang_zh_cn">简体中文</string>
+    <string name="lang_en">English</string>
+
+    <string name="step1_title">步驟 1：確認系統預設數位助理</string>
+    <string name="step1_desc">使用 VISTrigger 喚起 Gemini 圈選／浮層視窗前，請先在系統設定中將「預設數位助理應用程式」設為 Google（並於 Google 內選用 Gemini）。</string>
+    <string name="step1_btn">開啟 Android 系統預設數位助理設定頁</string>
+
+    <string name="step2_title">步驟 2：Shizuku 連線與一鍵 ADB 權限</string>
+    <string name="status_shizuku_service">• Shizuku 服務：%1$s  |  授權：%2$s</string>
+    <string name="status_running">運行中</string>
+    <string name="status_stopped">未啟動</string>
+    <string name="status_granted">已授權</string>
+    <string name="status_not_granted">未授權</string>
+    <string name="status_user_service">• UserService (UID 2000)：%1$s</string>
+    <string name="status_connected">已連線</string>
+    <string name="status_disconnected">未連線</string>
+    <string name="status_notif_listener">• 語音收音通知監聽權限：%1$s</string>
+    <string name="status_enabled">已開啟</string>
+    <string name="status_disabled">未開啟</string>
+    <string name="btn_request_shizuku">1. 先點此請求 Shizuku 授權</string>
+    <string name="btn_grant_all_adb">⚡ 一鍵透過 Shizuku 授予所有 ADB 權限</string>
+    <string name="toast_granted_all_adb">已透過 Shizuku 自動授予所有所需 ADB 權限！</string>
+    <string name="btn_manual_notif_settings">手動檢查通知權限</string>
+    <string name="btn_refresh_status">重新整理狀態</string>
+
+    <string name="ai_section_title">攔截後啟動的目標 AI 助理</string>
+    <string name="ai_vis_title">Gemini 圈選／浮層視窗 (VISTrigger 模式 - 預設推薦)</string>
+    <string name="ai_vis_desc">直接呼叫系統 IVoiceInteractionManagerService.showSessionFromSession，不跳離當前畫面直接彈出 Gemini 浮層與圈選搜尋。</string>
+    <string name="ai_custom_title">改為開啟指定的 AI App</string>
+    <string name="ai_custom_current">目前選擇：%1$s (%2$s)</string>
+    <string name="ai_quick_pick_label">快速選擇常見 AI App：</string>
+    <string name="btn_pick_installed_app">📱 從手機已安裝的所有 App 中挑選...</string>
+    <string name="dialog_pick_app_title">選擇要啟動的 AI App</string>
+    <string name="dialog_pick_app_search">搜尋 App 名稱或套件名</string>
+    <string name="dialog_pick_app_loading">正在讀取已安裝 App 清單...</string>
+    <string name="btn_cancel">取消</string>
+
+    <string name="control_section_title">語音呼喚攔截控制</string>
+    <string name="control_voice_only_notice">💡 智慧區分語音與手動開啟：本工具僅在「語音呼喊喚醒」產生收音狀態通知（如『收音 (藍心小V)』）時才攔截並強制關閉；您平時在桌面手動點開陸版助理 App 打字或使用內建功能時，完全不會被干涉！</string>
+    <string name="switch_enable_title">啟用語音呼喚攔截</string>
+    <string name="switch_enable_sub">語音呼叫陸版助理時，強制關閉陸版助理並啟動目標 AI</string>
+    <string name="switch_back_title">強制關閉前先送出返回鍵</string>
+    <string name="switch_back_sub">比照原 MacroDroid 腳本先收起浮層再強制停止</string>
+    <string name="switch_vibrate_title">喚起 Gemini 時震動回饋</string>
+    <string name="switch_vibrate_sub">觸發成功時提供清脆觸覺點擊震動</string>
+    <string name="btn_test_vis">測試 VISTrigger</string>
+    <string name="btn_test_full">測試完整攔截流程</string>
+
+    <string name="preset_section_title">陸版 ROM 廠牌預設與關鍵字設定</string>
+    <string name="preset_quick_label">一鍵套用廠牌預設值：</string>
+    <string name="preset_all">三廠牌通用預設</string>
+    <string name="preset_vivo">vivo (藍心小V)</string>
+    <string name="preset_oppo">OPPO (小布助手)</string>
+    <string name="preset_xiaomi">小米 (小愛同學)</string>
+    <string name="field_notif_keywords">語音收音通知關鍵字 (逗號分隔)</string>
+    <string name="field_target_packages">強制關閉陸版助理套件名 (逗號分隔)</string>
+    <string name="slider_delay_label">強制關閉後延遲啟動 AI：%1$d ms</string>
+
+    <string name="log_section_title">攔截執行紀錄</string>
+    <string name="btn_clear">清除</string>
+    <string name="log_empty">尚無攔截紀錄</string>
+
+    <string name="about_section_title">關於與版本更新</string>
+    <string name="about_version_fixed">目前版本：v%1$s（固定簽章，可直接覆蓋更新）</string>
+    <string name="btn_about_github">關於我 / GitHub</string>
+    <string name="btn_check_update">檢查 APK 更新</string>
+    <string name="btn_checking_update">檢查中...</string>
+    <string name="toast_latest_version">目前已是最新版本 (v%1$s)</string>
+    <string name="toast_update_failed">檢查更新失敗：%1$s</string>
+
+    <string name="dialog_about_title">關於 陸版語音呼喚攔截 (CN Voice Intercept)</string>
+    <string name="dialog_about_body">作者 / Author：dx9901mk5\n版本 / Version：v%1$s\n\n[中文]\n專為 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陸版 CN ROM 打造的語音喚醒攔截工具。當透過語音呼喊陸版助理時，利用 Shizuku 瞬間強制關閉陸版助理並透過 VISTrigger 喚起 Gemini 圈選／浮層視窗（或自選 AI App），且不干涉平時手動點開陸版助理使用。\n\n[English]\nBuilt for vivo (OriginOS), OPPO (ColorOS), and Xiaomi (HyperOS) Mainland China ROMs. Uses Shizuku to intercept voice wake-up calls, force-stop the stock Chinese assistant, and launch Google Gemini (via VISTrigger) or your chosen AI app—without interfering with manual app launches.</string>
+    <string name="btn_open_github">前往 GitHub 專案頁</string>
+    <string name="btn_close">關閉</string>
+
+    <string name="dialog_update_title">發現新版本 v%1$s</string>
+    <string name="dialog_update_version">目前版本：v%1$s → 最新版本：v%2$s</string>
+    <string name="dialog_update_desc">本 App 採用固定簽名，下載新版 APK 後可直接覆蓋安裝（推薦搭配支援 Shizuku 的 ZArchiver 或 InstallerX Revived 安裝）。</string>
+    <string name="dialog_update_notes">更新內容：\n%1$s</string>
+    <string name="btn_download_now">立即下載更新</string>
+    <string name="btn_later">稍後再說</string>
+
+    <string name="fgs_channel_name">語音攔截常駐服務</string>
+    <string name="fgs_notif_title">陸版語音攔截運作中</string>
+    <string name="fgs_notif_text">待機攔截陸版語音喚醒並切換至 Gemini</string>
+    <string name="update_channel_name">版本更新通知</string>
+    <string name="update_notif_title">發現新版本 v%1$s</string>
+    <string name="update_notif_text">目前版本 v%1$s，點擊下載更新（固定簽名可直接覆蓋安裝）</string>
+</resources>

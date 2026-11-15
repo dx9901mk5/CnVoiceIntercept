@@ -25,6 +25,7 @@ object AppPrefs {
     private const val KEY_LAUNCH_MODE = "launch_mode"
     private const val KEY_CUSTOM_AI_PACKAGE = "custom_ai_package"
     private const val KEY_CUSTOM_AI_LABEL = "custom_ai_label"
+    private const val KEY_APP_LANG = "app_language" // "system", "zh-TW", "zh-CN", "en"
 
     // 預設涵蓋 vivo (藍心小V)、OPPO (小布助手)、小米 (小愛同學) 的語音助理套件
     const val DEFAULT_TARGET_PACKAGES =
@@ -124,6 +125,13 @@ object AppPrefs {
 
     fun getCustomAiLabel(context: Context): String =
         prefs(context).getString(KEY_CUSTOM_AI_LABEL, DEFAULT_CUSTOM_AI_LABEL) ?: DEFAULT_CUSTOM_AI_LABEL
+
+    fun getAppLanguage(context: Context): String =
+        prefs(context).getString(KEY_APP_LANG, "system") ?: "system"
+
+    fun setAppLanguage(context: Context, lang: String) {
+        prefs(context).edit().putString(KEY_APP_LANG, lang).apply()
+    }
 }
 
 object InterceptLogStore {
