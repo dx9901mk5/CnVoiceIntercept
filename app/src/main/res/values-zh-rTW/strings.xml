@@ -36,6 +36,21 @@
     <string name="btn_manual_notif_settings">手動檢查通知權限</string>
     <string name="btn_refresh_status">重新整理狀態</string>
 
+    <!-- Step 3: Pinned CN Assistant Detection & Selection -->
+    <string name="pinned_section_title">步驟 3：鎖定本機陸版語音助理（單一指針極速模式）</string>
+    <string name="pinned_current_label">目前鎖定攔截：%1$s (%2$s)</string>
+    <string name="pinned_detected_badge">本機 (%1$s) 自動判定：%2$s</string>
+    <string name="pinned_desc">固定單一陸版助理指標後，語音喚醒時直接由 Shizuku 底層鎖定該套件瞬間強制終止並立即執行後續啟動 Gemini 步驟，不再掃描其他廠牌套件！</string>
+    <string name="btn_change_pinned_assistant">🔍 確認 / 改選鎖定的陸版助理</string>
+    <string name="assistant_name_vivo">vivo / iQOO 藍心小V</string>
+    <string name="assistant_name_oppo">OPPO / 一加 / Realme 小布助手</string>
+    <string name="assistant_name_xiaomi">小米 / Redmi 小愛同學</string>
+    <string name="assistant_name_custom">自訂套件名稱</string>
+    <string name="dialog_detect_title">確認本機陸版語音助理</string>
+    <string name="dialog_detect_subtitle">偵測機型：%1$s\n系統自動判定助理：%2$s (%3$s)\n\n確認後將固定指針只針對此助理進行極速攔截，您也可以在下方改選其他助理：</string>
+    <string name="btn_confirm_pin">確認鎖定此助理</string>
+    <string name="toast_pinned_confirmed">已固定鎖定攔截：%1$s (%2$s)</string>
+
     <!-- Target AI Assistant -->
     <string name="ai_section_title">攔截後啟動的目標 AI 助理</string>
     <string name="ai_vis_title">啟動 Gemini（圈選／浮層視窗 - 預設推薦）</string>
@@ -54,21 +69,23 @@
     <string name="control_voice_only_notice">💡 智慧區分語音與手動開啟：本工具僅在「語音呼喊喚醒」產生收音狀態通知（如『收音 (藍心小V)』，OPPO小布或小愛同學）時才攔截並強制關閉；您平時在桌面手動點開陸版助理 App 打字或使用內建功能時，完全不會被干涉！</string>
     <string name="switch_enable_title">啟用語音呼喚攔截</string>
     <string name="switch_enable_sub">攔截後透過 Shizuku 強制終止陸版助理，再直接啟動 Gemini</string>
+    <string name="switch_direct_wakeup_title">⚡ 底層語音喚醒直連偵測（免等通知極速觸發）</string>
+    <string name="switch_direct_wakeup_sub">直接偵測系統語音喚醒服務與收音浮層，不需等待 1.6 秒通知推播即可瞬間秒殺並喚起 Gemini</string>
     <string name="switch_vibrate_title">喚起 Gemini 時震動回饋</string>
     <string name="switch_vibrate_sub">強制終止陸版助理並喚起 Gemini 時提供觸覺震動回饋</string>
     <string name="btn_test_vis">測試啟動 Gemini</string>
     <string name="btn_test_full">測試完整攔截流程</string>
 
     <!-- ROM Presets & Keywords -->
-    <string name="preset_section_title">陸版 ROM 廠牌預設與關鍵字設定</string>
-    <string name="preset_quick_label">一鍵套用廠牌預設值：</string>
-    <string name="preset_all">三廠牌通用預設</string>
+    <string name="preset_section_title">鎖定助理套件與進階參數設定</string>
+    <string name="preset_quick_label">一鍵切換鎖定廠牌：</string>
+    <string name="preset_all">自動判定本機</string>
     <string name="preset_vivo">vivo (藍心小V)</string>
     <string name="preset_oppo">OPPO (小布助手)</string>
     <string name="preset_xiaomi">小米 (小愛同學)</string>
-    <string name="field_notif_keywords">語音收音通知關鍵字 (逗號分隔)</string>
-    <string name="field_target_packages">強制關閉陸版助理套件名 (逗號分隔)</string>
-    <string name="slider_delay_label">強制終止後延遲啟動 Gemini：%1$d ms</string>
+    <string name="field_notif_keywords">備援語音收音通知關鍵字 (逗號分隔)</string>
+    <string name="field_target_packages">目前固定鎖定強制關閉的套件名</string>
+    <string name="slider_delay_label">強制終止後緩衝啟動 Gemini：%1$d ms</string>
 
     <!-- Logs -->
     <string name="log_section_title">攔截執行紀錄</string>

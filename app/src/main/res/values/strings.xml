@@ -36,6 +36,21 @@
     <string name="btn_manual_notif_settings">Notification Access</string>
     <string name="btn_refresh_status">Refresh Status</string>
 
+    <!-- Step 3: Pinned CN Assistant Detection & Selection -->
+    <string name="pinned_section_title">Step 3: Pinned CN Voice Assistant (Fast Single-Target)</string>
+    <string name="pinned_current_label">Currently Pinned: %1$s (%2$s)</string>
+    <string name="pinned_detected_badge">Auto-Detected on %1$s: %2$s</string>
+    <string name="pinned_desc">Locking onto a single stock CN assistant skips scanning other brands and immediately force-stops the target upon voice wake-up.</string>
+    <string name="btn_change_pinned_assistant">🔍 Re-Detect / Change CN Assistant</string>
+    <string name="assistant_name_vivo">vivo / iQOO BlueLM (藍心小V)</string>
+    <string name="assistant_name_oppo">OPPO / OnePlus Breeno (小布助手)</string>
+    <string name="assistant_name_xiaomi">Xiaomi / Redmi XiaoAi (小愛同學)</string>
+    <string name="assistant_name_custom">Custom Package</string>
+    <string name="dialog_detect_title">Confirm Detected CN Voice Assistant</string>
+    <string name="dialog_detect_subtitle">Device: %1$s\nAuto-detected assistant: %2$s (%3$s)\n\nConfirming pins interception exclusively to this assistant for maximum speed, or select another below:</string>
+    <string name="btn_confirm_pin">Confirm &amp; Lock Target</string>
+    <string name="toast_pinned_confirmed">Locked interception target: %1$s (%2$s)</string>
+
     <!-- Target AI Assistant -->
     <string name="ai_section_title">Target AI Assistant After Interception</string>
     <string name="ai_vis_title">Launch Gemini (Overlay / Circle to Search - Default)</string>
@@ -51,24 +66,26 @@
 
     <!-- Interception Controls -->
     <string name="control_section_title">Voice Wake-Up Interception Control</string>
-    <string name="control_voice_only_notice">💡 Smart Voice vs. Manual Distinction: Interception triggers ONLY when a voice wake-up recording notification (e.g. "收音 (藍心小V)", OPPO Breeno, or Xiaomi XiaoAi) appears. Opening the stock Chinese assistant manually from your home screen to type or use built-in features is never blocked!</string>
+    <string name="control_voice_only_notice">💡 Smart Voice vs. Manual Distinction: This tool only intercepts when "voice wake-up" triggers a voice wake-up service or recording status notification (e.g. "收音 (藍心小V)", OPPO Breeno, or Xiaomi XiaoAi) and force-stops it; opening the stock Chinese assistant app manually from your home screen to type or use built-in features is never interfered with!</string>
     <string name="switch_enable_title">Enable Voice Wake-Up Interception</string>
     <string name="switch_enable_sub">Force-stop stock CN voice assistant via Shizuku and launch Gemini</string>
+    <string name="switch_direct_wakeup_title">⚡ Direct Voice Wake-Up Event Detection (Ultra-Fast)</string>
+    <string name="switch_direct_wakeup_sub">Intercepts system voice wake-up service/overlay events directly via Shizuku without waiting 1.6s for notifications</string>
     <string name="switch_vibrate_title">Haptic Feedback When Launching Gemini</string>
     <string name="switch_vibrate_sub">Vibrate with a crisp click when Gemini is summoned</string>
     <string name="btn_test_vis">Test Launch Gemini</string>
     <string name="btn_test_full">Test Full Intercept</string>
 
     <!-- ROM Presets & Keywords -->
-    <string name="preset_section_title">CN ROM Brand Presets &amp; Keywords</string>
-    <string name="preset_quick_label">One-Tap Brand Presets:</string>
-    <string name="preset_all">All 3 Brands (Default)</string>
-    <string name="preset_vivo">vivo (BlueLM / Jovi)</string>
+    <string name="preset_section_title">Pinned Package &amp; Advanced Parameters</string>
+    <string name="preset_quick_label">Quick Switch Pinned Brand:</string>
+    <string name="preset_all">vivo (Default)</string>
+    <string name="preset_vivo">vivo (BlueLM)</string>
     <string name="preset_oppo">OPPO (Breeno)</string>
     <string name="preset_xiaomi">Xiaomi (XiaoAi)</string>
-    <string name="field_notif_keywords">Voice Recording Notification Keywords (comma-separated)</string>
-    <string name="field_target_packages">CN Assistant Packages to Force-Stop (comma-separated)</string>
-    <string name="slider_delay_label">Delay Before Launching Gemini After Force-Stop: %1$d ms</string>
+    <string name="field_notif_keywords">Fallback Notification Keywords (comma-separated)</string>
+    <string name="field_target_packages">Pinned CN Assistant Package to Force-Stop</string>
+    <string name="slider_delay_label">Buffer Delay Before Launching Gemini: %1$d ms</string>
 
     <!-- Logs -->
     <string name="log_section_title">Interception Activity Log</string>

@@ -139,6 +139,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        AppPrefs.ensurePinnedAssistantInitialized(this)
         ShizukuController.init(this)
         if (AppPrefs.isEnabled(this)) {
             InterceptKeepAliveService.start(this)
@@ -199,6 +200,16 @@ private fun openDefaultAssistantSettings(context: Context) {
     }
 }
 
+@Composable
+private fun profileDisplayName(profileId: String): String {
+    return when (profileId) {
+        AppPrefs.PROFILE_VIVO -> stringResource(R.string.assistant_name_vivo)
+        AppPrefs.PROFILE_OPPO -> stringResource(R.string.assistant_name_oppo)
+        AppPrefs.PROFILE_XIAOMI -> stringResource(R.string.assistant_name_xiaomi)
+        else -> stringResource(R.string.assistant_name_custom)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MainScreen() {
@@ -207,7 +218,13 @@ fun MainScreen() {
     val shizukuStatus by ShizukuController.status.collectAsState()
     val logs by InterceptLogStore.logs.collectAsState()
 
+    val detectedInfo = remember { AppPrefs.detectDeviceCnAssistant(context) }
+    var pinnedProfileId by remember { mutableStateOf(AppPrefs.getPinnedProfileId(context)) }
+    var pinnedPackage by remember { mutableStateOf(AppPrefs.getPinnedPackage(context)) }
+    var showDetectDialog by remember { mutableStateOf(!AppPrefs.isAssistantConfirmed(context)) }
+
     var enabled by remember { mutableStateOf(AppPrefs.isEnabled(context)) }
+    var directWakeup by remember { mutableStateOf(AppPrefs.isDirectWakeupDetectEnabled(context)) }
     var vibrate by remember { mutableStateOf(AppPrefs.isVibrateEnabled(context)) }
     var targetPackages by remember { mutableStateOf(AppPrefs.getTargetPackagesRaw(context)) }
     var notifKeywords by remember { mutableStateOf(AppPrefs.getNotifKeywordsRaw(context)) }
@@ -417,7 +434,80 @@ fun MainScreen() {
                 }
             }
 
-            // 3. 攔截後要啟動的目標 AI 助理設定 (預設 Gemini VISTrigger / 可自選 AI App)
+            // 3. 步驟 3：鎖定本機陸版語音助理（單一指針極速模式）
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            stringResource(R.string.pinned_section_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.pinned_detected_badge,
+                                    detectedInfo.deviceBrandModel,
+                                    profileDisplayName(detectedInfo.profileId)
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                stringResource(
+                                    R.string.pinned_current_label,
+                                    profileDisplayName(pinnedProfileId),
+                                    pinnedPackage
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    Text(
+                        stringResource(R.string.pinned_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+
+                    Button(
+                        onClick = { showDetectDialog = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.btn_change_pinned_assistant))
+                    }
+                }
+            }
+
+            // 4. 攔截後要啟動的目標 AI 助理設定 (預設啟動 Gemini / 可自選 AI App)
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp)
@@ -436,7 +526,7 @@ fun MainScreen() {
                         )
                     }
 
-                    // 選項 A：預設 VISTrigger 喚起 Gemini
+                    // 選項 A：預設喚起 Gemini
                     Surface(
                         shape = RoundedCornerShape(14.dp),
                         color = if (launchMode == AppPrefs.LAUNCH_MODE_VIS_TRIGGER)
@@ -545,7 +635,7 @@ fun MainScreen() {
                 }
             }
 
-            // 4. 語音攔截主控台與「不干涉手動點開」說明
+            // 5. 語音攔截主控台與「不干涉手動點開」說明
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp)
@@ -585,6 +675,18 @@ fun MainScreen() {
                             enabled = it
                             AppPrefs.setEnabled(context, it)
                             if (it) InterceptKeepAliveService.start(context) else InterceptKeepAliveService.stop(context)
+                            ShizukuController.refreshTaskWatch()
+                        }
+                    )
+
+                    SwitchRow(
+                        title = stringResource(R.string.switch_direct_wakeup_title),
+                        subtitle = stringResource(R.string.switch_direct_wakeup_sub),
+                        checked = directWakeup,
+                        onCheckedChange = {
+                            directWakeup = it
+                            AppPrefs.setDirectWakeupDetectEnabled(context, it)
+                            ShizukuController.refreshTaskWatch()
                         }
                     )
 
@@ -623,7 +725,7 @@ fun MainScreen() {
                 }
             }
 
-            // 5. 廠牌快速預設與目標設定 (vivo / OPPO / 小米)
+            // 6. 鎖定助理套件與進階參數設定 (vivo / OPPO / 小米)
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp)
@@ -645,41 +747,62 @@ fun MainScreen() {
                     ) {
                         AssistChip(
                             onClick = {
-                                targetPackages = AppPrefs.DEFAULT_TARGET_PACKAGES
-                                notifKeywords = AppPrefs.DEFAULT_NOTIF_KEYWORDS
-                                AppPrefs.setTargetPackagesRaw(context, targetPackages)
-                                AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
+                                val det = AppPrefs.detectDeviceCnAssistant(context)
+                                AppPrefs.applyPinnedAssistantProfile(context, det.profileId, det.pinnedPackage, true)
+                                pinnedProfileId = AppPrefs.getPinnedProfileId(context)
+                                pinnedPackage = AppPrefs.getPinnedPackage(context)
+                                targetPackages = AppPrefs.getTargetPackagesRaw(context)
+                                notifKeywords = AppPrefs.getNotifKeywordsRaw(context)
+                                ShizukuController.refreshTaskWatch()
                             },
                             label = { Text(stringResource(R.string.preset_all)) }
                         )
                         AssistChip(
                             onClick = {
-                                targetPackages = "com.vivo.ai.copilot,com.vivo.agent,com.vivo.aiservice"
-                                notifKeywords = "收音,藍心小V,蓝心小V,正在傾聽,正在聆聽,正在听"
-                                AppPrefs.setTargetPackagesRaw(context, targetPackages)
-                                AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
+                                AppPrefs.applyPinnedAssistantProfile(context, AppPrefs.PROFILE_VIVO, "com.vivo.ai.copilot", true)
+                                pinnedProfileId = AppPrefs.getPinnedProfileId(context)
+                                pinnedPackage = AppPrefs.getPinnedPackage(context)
+                                targetPackages = AppPrefs.getTargetPackagesRaw(context)
+                                notifKeywords = AppPrefs.getNotifKeywordsRaw(context)
+                                ShizukuController.refreshTaskWatch()
                             },
                             label = { Text(stringResource(R.string.preset_vivo)) }
                         )
                         AssistChip(
                             onClick = {
-                                targetPackages = "com.heytap.speechassist,com.coloros.speechassist,com.oplus.aiunit"
-                                notifKeywords = "收音,小布,正在傾聽,正在聆聽,正在听,Breeno"
-                                AppPrefs.setTargetPackagesRaw(context, targetPackages)
-                                AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
+                                AppPrefs.applyPinnedAssistantProfile(context, AppPrefs.PROFILE_OPPO, null, true)
+                                pinnedProfileId = AppPrefs.getPinnedProfileId(context)
+                                pinnedPackage = AppPrefs.getPinnedPackage(context)
+                                targetPackages = AppPrefs.getTargetPackagesRaw(context)
+                                notifKeywords = AppPrefs.getNotifKeywordsRaw(context)
+                                ShizukuController.refreshTaskWatch()
                             },
                             label = { Text(stringResource(R.string.preset_oppo)) }
                         )
                         AssistChip(
                             onClick = {
-                                targetPackages = "com.miui.voiceassist,com.xiaomi.voiceassistant,com.miui.voicetrigger"
-                                notifKeywords = "收音,小愛,小爱,正在傾聽,正在聆聽,正在听"
-                                AppPrefs.setTargetPackagesRaw(context, targetPackages)
-                                AppPrefs.setNotifKeywordsRaw(context, notifKeywords)
+                                AppPrefs.applyPinnedAssistantProfile(context, AppPrefs.PROFILE_XIAOMI, null, true)
+                                pinnedProfileId = AppPrefs.getPinnedProfileId(context)
+                                pinnedPackage = AppPrefs.getPinnedPackage(context)
+                                targetPackages = AppPrefs.getTargetPackagesRaw(context)
+                                notifKeywords = AppPrefs.getNotifKeywordsRaw(context)
+                                ShizukuController.refreshTaskWatch()
                             },
                             label = { Text(stringResource(R.string.preset_xiaomi)) }
                         )
                     }
+
+                    OutlinedTextField(
+                        value = targetPackages,
+                        onValueChange = {
+                            targetPackages = it
+                            AppPrefs.setTargetPackagesRaw(context, it)
+                            pinnedPackage = AppPrefs.getPinnedPackage(context)
+                            ShizukuController.refreshTaskWatch()
+                        },
+                        label = { Text(stringResource(R.string.field_target_packages)) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     OutlinedTextField(
                         value = notifKeywords,
@@ -691,16 +814,6 @@ fun MainScreen() {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    OutlinedTextField(
-                        value = targetPackages,
-                        onValueChange = {
-                            targetPackages = it
-                            AppPrefs.setTargetPackagesRaw(context, it)
-                        },
-                        label = { Text(stringResource(R.string.field_target_packages)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
                     Text(
                         stringResource(R.string.slider_delay_label, delayMs.roundToLong()),
                         style = MaterialTheme.typography.bodyMedium
@@ -709,12 +822,12 @@ fun MainScreen() {
                         value = delayMs,
                         onValueChange = { delayMs = it },
                         onValueChangeFinished = { AppPrefs.setDelayMs(context, delayMs.roundToLong()) },
-                        valueRange = 0f..800f
+                        valueRange = 0f..500f
                     )
                 }
             }
 
-            // 6. 即時攔截紀錄
+            // 7. 即時攔截紀錄
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp)
@@ -751,7 +864,7 @@ fun MainScreen() {
                 }
             }
 
-            // 7. 關於我與檢查更新卡片
+            // 8. 關於我與檢查更新卡片
             ElevatedCard(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp)
@@ -819,6 +932,130 @@ fun MainScreen() {
 
             Spacer(modifier = Modifier.height(28.dp))
         }
+    }
+
+    // 彈窗 A：自動判定本機陸版語音助理 & 讓使用者確認或改選
+    if (showDetectDialog) {
+        var selectedProfile by remember(pinnedProfileId) { mutableStateOf(pinnedProfileId) }
+        var customPkgInput by remember(pinnedPackage) { mutableStateOf(pinnedPackage) }
+
+        val options = listOf(
+            Triple(AppPrefs.PROFILE_VIVO, stringResource(R.string.assistant_name_vivo), "com.vivo.ai.copilot"),
+            Triple(AppPrefs.PROFILE_OPPO, stringResource(R.string.assistant_name_oppo), "com.heytap.speechassist"),
+            Triple(AppPrefs.PROFILE_XIAOMI, stringResource(R.string.assistant_name_xiaomi), "com.miui.voiceassist"),
+            Triple(AppPrefs.PROFILE_CUSTOM, stringResource(R.string.assistant_name_custom), customPkgInput)
+        )
+
+        AlertDialog(
+            onDismissRequest = {
+                AppPrefs.setAssistantConfirmed(context, true)
+                showDetectDialog = false
+            },
+            icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
+            title = { Text(stringResource(R.string.dialog_detect_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        stringResource(
+                            R.string.dialog_detect_subtitle,
+                            detectedInfo.deviceBrandModel,
+                            profileDisplayName(detectedInfo.profileId),
+                            detectedInfo.pinnedPackage
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    HorizontalDivider()
+                    options.forEach { (id, label, defaultPkg) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedProfile = id
+                                    if (id != AppPrefs.PROFILE_CUSTOM) {
+                                        customPkgInput = if (detectedInfo.profileId == id) detectedInfo.pinnedPackage else defaultPkg
+                                    }
+                                }
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selectedProfile == id,
+                                onClick = {
+                                    selectedProfile = id
+                                    if (id != AppPrefs.PROFILE_CUSTOM) {
+                                        customPkgInput = if (detectedInfo.profileId == id) detectedInfo.pinnedPackage else defaultPkg
+                                    }
+                                }
+                            )
+                            Column(modifier = Modifier.padding(start = 8.dp)) {
+                                Text(label, fontWeight = FontWeight.SemiBold)
+                                if (id != AppPrefs.PROFILE_CUSTOM) {
+                                    val pkgText = if (detectedInfo.profileId == id) detectedInfo.pinnedPackage else defaultPkg
+                                    Text(
+                                        pkgText,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (selectedProfile == AppPrefs.PROFILE_CUSTOM) {
+                        OutlinedTextField(
+                            value = customPkgInput,
+                            onValueChange = { customPkgInput = it },
+                            label = { Text(stringResource(R.string.field_target_packages)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val pkgOverride = if (selectedProfile == AppPrefs.PROFILE_CUSTOM) customPkgInput else null
+                        AppPrefs.applyPinnedAssistantProfile(
+                            context = context,
+                            profileId = selectedProfile,
+                            customPackage = pkgOverride,
+                            markConfirmed = true
+                        )
+                        pinnedProfileId = AppPrefs.getPinnedProfileId(context)
+                        pinnedPackage = AppPrefs.getPinnedPackage(context)
+                        targetPackages = AppPrefs.getTargetPackagesRaw(context)
+                        notifKeywords = AppPrefs.getNotifKeywordsRaw(context)
+                        ShizukuController.refreshTaskWatch()
+                        showDetectDialog = false
+
+                        val confirmedLabel = when (pinnedProfileId) {
+                            AppPrefs.PROFILE_VIVO -> context.getString(R.string.assistant_name_vivo)
+                            AppPrefs.PROFILE_OPPO -> context.getString(R.string.assistant_name_oppo)
+                            AppPrefs.PROFILE_XIAOMI -> context.getString(R.string.assistant_name_xiaomi)
+                            else -> context.getString(R.string.assistant_name_custom)
+                        }
+                        InterceptLogStore.add("已鎖定單一陸版助理指標：$confirmedLabel ($pinnedPackage)")
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.toast_pinned_confirmed, confirmedLabel, pinnedPackage),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                ) {
+                    Text(stringResource(R.string.btn_confirm_pin))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        AppPrefs.setAssistantConfirmed(context, true)
+                        showDetectDialog = false
+                    }
+                ) {
+                    Text(stringResource(R.string.btn_close))
+                }
+            }
+        )
     }
 
     // 彈窗 0：語言切換對話框 (繁體中文 / 简体中文 / English / 跟隨系統)

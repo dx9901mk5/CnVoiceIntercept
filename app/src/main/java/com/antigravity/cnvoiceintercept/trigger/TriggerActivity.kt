@@ -2,6 +2,8 @@ package com.antigravity.cnvoiceintercept.trigger
 
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +12,15 @@ import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 
 class TriggerActivity : ComponentActivity() {
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val delayedFinish = Runnable {
+        if (!isFinishing && !isDestroyed) {
+            finish()
+            @Suppress("DEPRECATION")
+            overridePendingTransition(0, 0)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -24,8 +35,13 @@ class TriggerActivity : ComponentActivity() {
         } else {
             Toast.makeText(this, getString(R.string.trigger_failed), Toast.LENGTH_SHORT).show()
         }
-        finish()
-        @Suppress("DEPRECATION")
-        overridePendingTransition(0, 0)
+
+        // 延後 300ms 再結束透明 Activity，避免系統 AssistStructure 擷取時因 Activity 瞬間銷毀而觸發 3 秒逾時
+        mainHandler.postDelayed(delayedFinish, 300L)
+    }
+
+    override fun onDestroy() {
+        mainHandler.removeCallbacks(delayedFinish)
+        super.onDestroy()
     }
 }

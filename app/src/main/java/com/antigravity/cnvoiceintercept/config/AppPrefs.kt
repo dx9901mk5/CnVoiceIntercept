@@ -1,6 +1,7 @@
 package com.antigravity.cnvoiceintercept.config
 
 import android.content.Context
+import android.os.Build
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -8,18 +9,33 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+data class CnAssistantProfile(
+    val id: String,
+    val candidatePackages: List<String>,
+    val defaultKeywords: String
+)
+
+data class DetectedAssistantInfo(
+    val profileId: String,
+    val pinnedPackage: String,
+    val isInstalledOnDevice: Boolean,
+    val deviceBrandModel: String
+)
+
 object AppPrefs {
     private const val PREFS_NAME = "cn_voice_intercept_prefs"
 
     private const val KEY_ENABLED = "intercept_enabled"
-    private const val KEY_TASK_WATCH_ENABLED = "task_watch_enabled"
+    private const val KEY_DIRECT_WAKEUP_ENABLED = "direct_wakeup_detect_enabled"
+    private const val KEY_PINNED_PROFILE = "pinned_assistant_profile"
+    private const val KEY_PINNED_PACKAGE = "pinned_assistant_package"
+    private const val KEY_ASSISTANT_CONFIRMED = "assistant_confirmed_v130"
     private const val KEY_TARGET_PACKAGES = "target_packages"
     private const val KEY_NOTIF_KEYWORDS = "notif_keywords"
-    private const val KEY_DELAY_MS = "delay_after_kill_ms"
-    private const val KEY_PRESS_BACK_FIRST = "press_back_first"
+    private const val KEY_DELAY_MS = "delay_after_kill_ms_v130"
     private const val KEY_VIBRATE = "vibrate_on_trigger"
 
-    // 啟動目標模式：預設使用 VISTrigger 喚起 Gemini 浮層視窗；或改為啟動自訂 AI App
+    // 啟動目標模式：預設喚起 Gemini 浮層視窗；或改為啟動自訂 AI App
     const val LAUNCH_MODE_VIS_TRIGGER = "vis_trigger"
     const val LAUNCH_MODE_CUSTOM_APP = "custom_app"
     private const val KEY_LAUNCH_MODE = "launch_mode"
@@ -27,20 +43,159 @@ object AppPrefs {
     private const val KEY_CUSTOM_AI_LABEL = "custom_ai_label"
     private const val KEY_APP_LANG = "app_language" // "system", "zh-TW", "zh-CN", "en"
 
-    // 預設涵蓋 vivo (藍心小V)、OPPO (小布助手)、小米 (小愛同學) 的語音助理套件
-    const val DEFAULT_TARGET_PACKAGES =
-        "com.vivo.ai.copilot,com.vivo.agent,com.vivo.aiservice," +
-        "com.heytap.speechassist,com.coloros.speechassist,com.oplus.aiunit," +
-        "com.miui.voiceassist,com.xiaomi.voiceassistant"
+    const val PROFILE_VIVO = "vivo"
+    const val PROFILE_OPPO = "oppo"
+    const val PROFILE_XIAOMI = "xiaomi"
+    const val PROFILE_CUSTOM = "custom"
 
-    // 預設語音呼喊喚醒時的收音通知關鍵字（僅在語音喚醒收音時觸發，不影響手動點開 App）
-    const val DEFAULT_NOTIF_KEYWORDS = "收音,藍心小V,正在傾聽,正在聆聽,正在听,語音喚醒,小布助手,小愛同學,小爱同学"
-    const val DEFAULT_DELAY_MS = 150L
+    val PROFILES = listOf(
+        CnAssistantProfile(
+            id = PROFILE_VIVO,
+            candidatePackages = listOf("com.vivo.ai.copilot", "com.vivo.agent"),
+            defaultKeywords = "收音,藍心小V,蓝心小V,正在傾聽,正在聆聽,正在听"
+        ),
+        CnAssistantProfile(
+            id = PROFILE_OPPO,
+            candidatePackages = listOf("com.heytap.speechassist", "com.coloros.speechassist", "com.oplus.aiunit"),
+            defaultKeywords = "收音,小布,Breeno,正在傾聽,正在聆聽,正在听"
+        ),
+        CnAssistantProfile(
+            id = PROFILE_XIAOMI,
+            candidatePackages = listOf("com.miui.voiceassist", "com.xiaomi.voiceassistant"),
+            defaultKeywords = "收音,小愛,小爱,正在傾聽,正在聆聽,正在听"
+        )
+    )
+
+    const val DEFAULT_TARGET_PACKAGES = "com.vivo.ai.copilot"
+    const val DEFAULT_NOTIF_KEYWORDS = "收音,藍心小V,蓝心小V,正在傾聽,正在聆聽,正在听,小布,小愛,小爱"
+    const val DEFAULT_DELAY_MS = 40L
     const val DEFAULT_CUSTOM_AI_PACKAGE = "com.google.android.apps.bard"
     const val DEFAULT_CUSTOM_AI_LABEL = "Google Gemini"
 
     private fun prefs(context: Context) =
         context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    /**
+     * 自動偵測本機安裝的陸版語音助理與廠牌型號，回傳單一鎖定套件指標。
+     */
+    fun detectDeviceCnAssistant(context: Context): DetectedAssistantInfo {
+        val pm = context.packageManager
+        val brand = "${Build.MANUFACTURER} ${Build.BRAND}".lowercase(Locale.ROOT)
+        val deviceBrandModel = "${Build.BRAND.replaceFirstChar { it.uppercase() }} ${Build.MODEL}"
+
+        fun isPkgInstalled(pkg: String): Boolean {
+            return runCatching {
+                pm.getPackageInfo(pkg, 0)
+                true
+            }.getOrDefault(false)
+        }
+
+        // 1. 先依已安裝的語音助理主套件精準判定
+        for (profile in PROFILES) {
+            for (pkg in profile.candidatePackages) {
+                if (isPkgInstalled(pkg)) {
+                    return DetectedAssistantInfo(
+                        profileId = profile.id,
+                        pinnedPackage = pkg,
+                        isInstalledOnDevice = true,
+                        deviceBrandModel = deviceBrandModel
+                    )
+                }
+            }
+        }
+
+        // 2. 若因系統權限隱藏套件清單，則依手機/平板廠牌名稱判定
+        return when {
+            brand.contains("vivo") || brand.contains("iqoo") -> DetectedAssistantInfo(
+                profileId = PROFILE_VIVO,
+                pinnedPackage = "com.vivo.ai.copilot",
+                isInstalledOnDevice = false,
+                deviceBrandModel = deviceBrandModel
+            )
+            brand.contains("oppo") || brand.contains("oneplus") || brand.contains("realme") || brand.contains("oplus") -> DetectedAssistantInfo(
+                profileId = PROFILE_OPPO,
+                pinnedPackage = "com.heytap.speechassist",
+                isInstalledOnDevice = false,
+                deviceBrandModel = deviceBrandModel
+            )
+            brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco") -> DetectedAssistantInfo(
+                profileId = PROFILE_XIAOMI,
+                pinnedPackage = "com.miui.voiceassist",
+                isInstalledOnDevice = false,
+                deviceBrandModel = deviceBrandModel
+            )
+            else -> DetectedAssistantInfo(
+                profileId = PROFILE_VIVO,
+                pinnedPackage = "com.vivo.ai.copilot",
+                isInstalledOnDevice = false,
+                deviceBrandModel = deviceBrandModel
+            )
+        }
+    }
+
+    /**
+     * 確保初始化單一助理指標（若尚未設定，自動填入本機偵測結果）
+     */
+    fun ensurePinnedAssistantInitialized(context: Context): DetectedAssistantInfo {
+        val detected = detectDeviceCnAssistant(context)
+        val p = prefs(context)
+        if (!p.contains(KEY_PINNED_PACKAGE) || !p.contains(KEY_PINNED_PROFILE)) {
+            val profile = PROFILES.find { it.id == detected.profileId }
+            p.edit()
+                .putString(KEY_PINNED_PROFILE, detected.profileId)
+                .putString(KEY_PINNED_PACKAGE, detected.pinnedPackage)
+                .putString(KEY_TARGET_PACKAGES, detected.pinnedPackage)
+                .apply {
+                    if (profile != null) {
+                        putString(KEY_NOTIF_KEYWORDS, profile.defaultKeywords)
+                    }
+                }
+                .apply()
+        }
+        return detected
+    }
+
+    fun isAssistantConfirmed(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_ASSISTANT_CONFIRMED, false)
+
+    fun setAssistantConfirmed(context: Context, confirmed: Boolean) {
+        prefs(context).edit().putBoolean(KEY_ASSISTANT_CONFIRMED, confirmed).apply()
+    }
+
+    fun getPinnedProfileId(context: Context): String {
+        ensurePinnedAssistantInitialized(context)
+        return prefs(context).getString(KEY_PINNED_PROFILE, PROFILE_VIVO) ?: PROFILE_VIVO
+    }
+
+    fun getPinnedPackage(context: Context): String {
+        ensurePinnedAssistantInitialized(context)
+        return prefs(context).getString(KEY_PINNED_PACKAGE, DEFAULT_TARGET_PACKAGES) ?: DEFAULT_TARGET_PACKAGES
+    }
+
+    fun applyPinnedAssistantProfile(
+        context: Context,
+        profileId: String,
+        customPackage: String? = null,
+        markConfirmed: Boolean = true
+    ) {
+        val detected = detectDeviceCnAssistant(context)
+        val profile = PROFILES.find { it.id == profileId }
+        val resolvedPkg = when {
+            !customPackage.isNullOrBlank() -> customPackage.trim()
+            profile != null && detected.profileId == profileId -> detected.pinnedPackage
+            profile != null -> profile.candidatePackages.first()
+            else -> getPinnedPackage(context)
+        }
+        val keywords = profile?.defaultKeywords ?: getNotifKeywordsRaw(context)
+
+        prefs(context).edit()
+            .putString(KEY_PINNED_PROFILE, profileId)
+            .putString(KEY_PINNED_PACKAGE, resolvedPkg)
+            .putString(KEY_TARGET_PACKAGES, resolvedPkg)
+            .putString(KEY_NOTIF_KEYWORDS, keywords)
+            .putBoolean(KEY_ASSISTANT_CONFIRMED, markConfirmed)
+            .apply()
+    }
 
     fun isEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_ENABLED, true)
@@ -50,20 +205,26 @@ object AppPrefs {
     }
 
     /**
-     * 預設關閉前景 Task 無差別監控，確保「只攔截語音呼叫收音，不干涉手動點開陸版助理直接使用」。
+     * 預設開啟「Shizuku 底層語音喚醒事件直連偵測」（不需等待 1.6 秒的系統通知，喚醒瞬間直接攔截）。
      */
-    fun isTaskWatchEnabled(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_TASK_WATCH_ENABLED, false)
+    fun isDirectWakeupDetectEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_DIRECT_WAKEUP_ENABLED, true)
 
-    fun setTaskWatchEnabled(context: Context, value: Boolean) {
-        prefs(context).edit().putBoolean(KEY_TASK_WATCH_ENABLED, value).apply()
+    fun setDirectWakeupDetectEnabled(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(KEY_DIRECT_WAKEUP_ENABLED, value).apply()
     }
 
-    fun getTargetPackagesRaw(context: Context): String =
-        prefs(context).getString(KEY_TARGET_PACKAGES, DEFAULT_TARGET_PACKAGES) ?: DEFAULT_TARGET_PACKAGES
+    fun getTargetPackagesRaw(context: Context): String {
+        ensurePinnedAssistantInitialized(context)
+        return prefs(context).getString(KEY_TARGET_PACKAGES, getPinnedPackage(context)) ?: getPinnedPackage(context)
+    }
 
     fun setTargetPackagesRaw(context: Context, raw: String) {
-        prefs(context).edit().putString(KEY_TARGET_PACKAGES, raw).apply()
+        val firstPkg = raw.split(",", "\n", ";").map { it.trim() }.firstOrNull { it.isNotEmpty() } ?: DEFAULT_TARGET_PACKAGES
+        prefs(context).edit()
+            .putString(KEY_TARGET_PACKAGES, raw)
+            .putString(KEY_PINNED_PACKAGE, firstPkg)
+            .apply()
     }
 
     fun getTargetPackagesList(context: Context): List<String> =
@@ -90,13 +251,6 @@ object AppPrefs {
 
     fun setDelayMs(context: Context, delayMs: Long) {
         prefs(context).edit().putLong(KEY_DELAY_MS, delayMs.coerceIn(0L, 1500L)).apply()
-    }
-
-    fun isPressBackFirst(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_PRESS_BACK_FIRST, true)
-
-    fun setPressBackFirst(context: Context, value: Boolean) {
-        prefs(context).edit().putBoolean(KEY_PRESS_BACK_FIRST, value).apply()
     }
 
     fun isVibrateEnabled(context: Context): Boolean =

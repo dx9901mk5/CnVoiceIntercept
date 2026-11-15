@@ -34,6 +34,20 @@
     <string name="btn_manual_notif_settings">手动检查通知权限</string>
     <string name="btn_refresh_status">刷新状态</string>
 
+    <string name="pinned_section_title">步骤 3：锁定本机陆版语音助理（单一指针极速模式）</string>
+    <string name="pinned_current_label">当前锁定拦截：%1$s (%2$s)</string>
+    <string name="pinned_detected_badge">本机 (%1$s) 自动判定：%2$s</string>
+    <string name="pinned_desc">固定单一陆版助理指针后，语音唤醒时直接由 Shizuku 底层锁定该包名瞬间强制终止并立即执行后续启动 Gemini 步骤，不再扫描其他品牌包名！</string>
+    <string name="btn_change_pinned_assistant">🔍 确认 / 改选锁定的陆版助理</string>
+    <string name="assistant_name_vivo">vivo / iQOO 蓝心小V</string>
+    <string name="assistant_name_oppo">OPPO / 一加 / Realme 小布助手</string>
+    <string name="assistant_name_xiaomi">小米 / Redmi 小爱同学</string>
+    <string name="assistant_name_custom">自定义包名</string>
+    <string name="dialog_detect_title">确认本机陆版语音助理</string>
+    <string name="dialog_detect_subtitle">检测机型：%1$s\n系统自动判定助理：%2$s (%3$s)\n\n确认后将固定指针只针对此助理进行极速拦截，您也可以在下方改选其他助理：</string>
+    <string name="btn_confirm_pin">确认锁定此助理</string>
+    <string name="toast_pinned_confirmed">已固定锁定拦截：%1$s (%2$s)</string>
+
     <string name="ai_section_title">拦截后启动的目标 AI 助理</string>
     <string name="ai_vis_title">启动 Gemini（圈选／浮层窗口 - 默认推荐）</string>
     <string name="ai_vis_desc">直接调用系统底层语音互动服务，不跳离当前画面直接弹出 Gemini 浮层与圈选搜索。</string>
@@ -50,20 +64,22 @@
     <string name="control_voice_only_notice">💡 智能区分语音与手动打开：本工具仅在“语音呼喊唤醒”产生收音状态通知（如『收音 (蓝心小V)』，OPPO小布或小爱同学）时才拦截并强制关闭；您平时在桌面手动点开陆版助理 App 打字或使用内置功能时，完全不会被干涉！</string>
     <string name="switch_enable_title">启用语音呼唤拦截</string>
     <string name="switch_enable_sub">拦截后通过 Shizuku 强制终止陆版助理，再直接启动 Gemini</string>
+    <string name="switch_direct_wakeup_title">⚡ 底层语音唤醒直连检测（免等通知极速触发）</string>
+    <string name="switch_direct_wakeup_sub">直接检测系统语音唤醒服务与收音浮层，不需等待 1.6 秒通知推播即可瞬间秒杀并唤起 Gemini</string>
     <string name="switch_vibrate_title">唤起 Gemini 时震动反馈</string>
     <string name="switch_vibrate_sub">强制终止陆版助理并唤起 Gemini 时提供触觉震动反馈</string>
     <string name="btn_test_vis">测试启动 Gemini</string>
     <string name="btn_test_full">测试完整拦截流程</string>
 
-    <string name="preset_section_title">陆版 ROM 品牌预设与关键字设置</string>
-    <string name="preset_quick_label">一键套用品牌预设值：</string>
-    <string name="preset_all">三品牌通用预设</string>
+    <string name="preset_section_title">锁定助理包名与进阶参数设置</string>
+    <string name="preset_quick_label">一键切换锁定品牌：</string>
+    <string name="preset_all">自动判定本机</string>
     <string name="preset_vivo">vivo (蓝心小V)</string>
     <string name="preset_oppo">OPPO (小布助手)</string>
     <string name="preset_xiaomi">小米 (小爱同学)</string>
-    <string name="field_notif_keywords">语音收音通知关键字 (逗号分隔)</string>
-    <string name="field_target_packages">强制关闭陆版助理包名 (逗号分隔)</string>
-    <string name="slider_delay_label">强制终止后延迟启动 Gemini：%1$d ms</string>
+    <string name="field_notif_keywords">备援语音收音通知关键字 (逗号分隔)</string>
+    <string name="field_target_packages">当前固定锁定强制关闭的包名</string>
+    <string name="slider_delay_label">强制终止后缓冲启动 Gemini：%1$d ms</string>
 
     <string name="log_section_title">拦截执行记录</string>
     <string name="btn_clear">清除</string>

@@ -12,11 +12,11 @@ import com.antigravity.cnvoiceintercept.intercept.AssistantNotificationListener
 import com.antigravity.cnvoiceintercept.intercept.InterceptCoordinator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 
 data class ShizukuStatus(
@@ -51,10 +51,13 @@ object ShizukuController {
     private val taskCallback = object : ITaskCallback.Stub() {
         override fun onTargetTaskAppeared(packageName: String, className: String) {
             val ctx = appContext ?: return
+            val alreadyKilled = className.startsWith("KILL_DONE:")
+            val reason = className.removePrefix("KILL_DONE:").ifEmpty { "底層語音喚醒偵測" }
             InterceptCoordinator.onInterceptTriggered(
                 context = ctx,
-                source = "Shizuku TaskWatch",
-                detectedPackage = packageName
+                source = reason,
+                detectedPackage = packageName,
+                alreadyKilled = alreadyKilled
             )
         }
     }
@@ -63,7 +66,7 @@ object ShizukuController {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             service = IPrivilegedService.Stub.asInterface(binder)
             _status.value = _status.value.copy(serviceBound = service != null)
-            InterceptLogStore.add("Shizuku UserService 已連線")
+            InterceptLogStore.add("Shizuku UserService 已連線（底層語音喚醒直連監聽就緒）")
             val ctx = appContext
             if (ctx != null && !AssistantNotificationListener.isEnabled(ctx)) {
                 grantAllRequiredPermissions(ctx) {}
@@ -103,6 +106,7 @@ object ShizukuController {
 
     fun init(context: Context) {
         appContext = context.applicationContext
+        AppPrefs.ensurePinnedAssistantInitialized(context)
         if (!listenersRegistered) {
             Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
             Shizuku.addBinderDeadListener(binderDeadListener)
@@ -175,7 +179,7 @@ object ShizukuController {
     fun refreshTaskWatch() {
         val ctx = appContext ?: return
         val svc = service ?: return
-        val enabled = AppPrefs.isEnabled(ctx) && AppPrefs.isTaskWatchEnabled(ctx)
+        val enabled = AppPrefs.isEnabled(ctx) && AppPrefs.isDirectWakeupDetectEnabled(ctx)
         runCatching {
             if (enabled) {
                 val pkgs = AppPrefs.getTargetPackagesList(ctx)
