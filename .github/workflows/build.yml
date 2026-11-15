@@ -32,23 +32,4 @@ jobs:
       - name: Publish GitHub Release v1.0.0
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if gh release view v1.0.0 >/dev/null 2>&1; then
-            gh release upload v1.0.0 CnVoiceIntercept-v1.0.0.apk --clobber
-          else
-            gh release create v1.0.0 CnVoiceIntercept-v1.0.0.apk \
-              --title "CnVoiceIntercept v1.0.0" \
-              --notes "### 中文說明
-- 首發版本 v1.0.0：專為 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陸版 CN ROM 打造的語音喚醒攔截工具（需搭配 Shizuku）。
-- 支援 繁體中文、簡體中文、English 三語系介面（可跟隨系統或於 App 右上角一鍵切換）。
-- 僅攔截「語音呼叫喚醒」收音狀態，不干涉平時手動點開陸版助理直接使用。
-- 預設透過 VISTrigger 方法喚起 Gemini 圈選／浮層視窗，亦支援自由選擇手機內任何 AI App。
-- 內建置頂「預設數位助理設定捷徑」、「一鍵透過 Shizuku 授予所有 ADB 權限」、自動檢查更新通知與固定簽章。
-
-### English Release Notes
-- Initial release v1.0.0: Rootless voice wake-up interceptor for vivo (OriginOS), OPPO (ColorOS), and Xiaomi (HyperOS) CN ROMs via Shizuku.
-- Full Traditional Chinese, Simplified Chinese, and English UI support (system-following + in-app language switcher).
-- Intercepts voice wake-up calls only—never interferes with manual launches of the stock Chinese assistant.
-- Summons Gemini overlay via VISTrigger by default, or launches any custom AI app you choose.
-- Includes top shortcut to Android Default Assistant settings, one-tap ADB permission grant via Shizuku, update checker, and fixed APK signing."
-          fi
+        run: if gh release view v1.0.0 >/dev/null 2>&1; then gh release upload v1.0.0 CnVoiceIntercept-v1.0.0.apk --clobber; else gh release create v1.0.0 CnVoiceIntercept-v1.0.0.apk --title "CnVoiceIntercept v1.0.0" --notes-file RELEASE_NOTES.md; fi
