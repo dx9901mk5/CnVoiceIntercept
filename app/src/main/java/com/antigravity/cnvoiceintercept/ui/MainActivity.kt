@@ -208,7 +208,6 @@ fun MainScreen() {
     val logs by InterceptLogStore.logs.collectAsState()
 
     var enabled by remember { mutableStateOf(AppPrefs.isEnabled(context)) }
-    var pressBackFirst by remember { mutableStateOf(AppPrefs.isPressBackFirst(context)) }
     var vibrate by remember { mutableStateOf(AppPrefs.isVibrateEnabled(context)) }
     var targetPackages by remember { mutableStateOf(AppPrefs.getTargetPackagesRaw(context)) }
     var notifKeywords by remember { mutableStateOf(AppPrefs.getNotifKeywordsRaw(context)) }
@@ -586,16 +585,6 @@ fun MainScreen() {
                             enabled = it
                             AppPrefs.setEnabled(context, it)
                             if (it) InterceptKeepAliveService.start(context) else InterceptKeepAliveService.stop(context)
-                        }
-                    )
-
-                    SwitchRow(
-                        title = stringResource(R.string.switch_back_title),
-                        subtitle = stringResource(R.string.switch_back_sub),
-                        checked = pressBackFirst,
-                        onCheckedChange = {
-                            pressBackFirst = it
-                            AppPrefs.setPressBackFirst(context, it)
                         }
                     )
 

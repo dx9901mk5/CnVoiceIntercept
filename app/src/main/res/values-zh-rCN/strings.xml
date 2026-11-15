@@ -2,7 +2,7 @@
     <string name="app_name">陆版语音拦截</string>
     <string name="app_subtitle">vivo / OPPO / 小米 CN ROM 语音唤醒秒切 Gemini</string>
     <string name="notification_listener_label">陆版语音助理拦截监听</string>
-    <string name="trigger_failed">VISTrigger 唤起失败，请确认已将 Google 设为默认数字助理且已选用 Gemini</string>
+    <string name="trigger_failed">启动 Gemini 失败，请确认已将 Google 设为默认数字助理且已选用 Gemini</string>
 
     <string name="btn_about_short">关于</string>
     <string name="btn_lang_short">语言</string>
@@ -12,12 +12,10 @@
     <string name="lang_zh_cn">简体中文</string>
     <string name="lang_en">English</string>
 
-    <!-- Step 1: Default Assistant -->
     <string name="step1_title">步骤 1：确认系统默认数字助理</string>
-    <string name="step1_desc">使用 VISTrigger 唤起 Gemini 圈选／浮层窗口前，请先在系统设置中将“默认数字助理应用”设为 Google（并在 Google 内选用 Gemini）。</string>
+    <string name="step1_desc">启动 Gemini 圈选／浮层窗口前，请先在系统设置中将“默认数字助理应用”设为 Google（并在 Google 内选用 Gemini）。</string>
     <string name="step1_btn">打开 Android 系统默认数字助理设置页</string>
 
-    <!-- Step 2: Shizuku & ADB Permissions -->
     <string name="step2_title">步骤 2：Shizuku 连接与一键 ADB 权限</string>
     <string name="status_shizuku_service">• Shizuku 服务：%1$s  |  授权：%2$s</string>
     <string name="status_running">运行中</string>
@@ -36,10 +34,9 @@
     <string name="btn_manual_notif_settings">手动检查通知权限</string>
     <string name="btn_refresh_status">刷新状态</string>
 
-    <!-- Target AI Assistant -->
     <string name="ai_section_title">拦截后启动的目标 AI 助理</string>
-    <string name="ai_vis_title">Gemini 圈选／浮层窗口 (VISTrigger 模式 - 默认推荐)</string>
-    <string name="ai_vis_desc">直接调用系统 IVoiceInteractionManagerService.showSessionFromSession，不跳离当前画面直接弹出 Gemini 浮层与圈选搜索。</string>
+    <string name="ai_vis_title">启动 Gemini（圈选／浮层窗口 - 默认推荐）</string>
+    <string name="ai_vis_desc">直接调用系统底层语音互动服务，不跳离当前画面直接弹出 Gemini 浮层与圈选搜索。</string>
     <string name="ai_custom_title">改为打开指定的 AI App</string>
     <string name="ai_custom_current">当前选择：%1$s (%2$s)</string>
     <string name="ai_quick_pick_label">快速选择常见 AI App：</string>
@@ -49,19 +46,15 @@
     <string name="dialog_pick_app_loading">正在读取已安装 App 列表...</string>
     <string name="btn_cancel">取消</string>
 
-    <!-- Interception Controls -->
     <string name="control_section_title">语音呼唤拦截控制</string>
-    <string name="control_voice_only_notice">💡 智能区分语音与手动打开：本工具仅在“语音呼喊唤醒”产生收音状态通知（如“收音 (蓝心小V)”）时才拦截并强制关闭；您平时在桌面手动点开陆版助理 App 打字或使用内置功能时，完全不会被干涉！</string>
+    <string name="control_voice_only_notice">💡 智能区分语音与手动打开：本工具仅在“语音呼喊唤醒”产生收音状态通知（如『收音 (蓝心小V)』，OPPO小布或小爱同学）时才拦截并强制关闭；您平时在桌面手动点开陆版助理 App 打字或使用内置功能时，完全不会被干涉！</string>
     <string name="switch_enable_title">启用语音呼唤拦截</string>
-    <string name="switch_enable_sub">语音呼叫陆版助理时，强制关闭陆版助理并启动目标 AI</string>
-    <string name="switch_back_title">强制关闭前先发送返回键</string>
-    <string name="switch_back_sub">比照原 MacroDroid 脚本先收起浮层再强制停止</string>
+    <string name="switch_enable_sub">拦截后通过 Shizuku 强制终止陆版助理，再直接启动 Gemini</string>
     <string name="switch_vibrate_title">唤起 Gemini 时震动反馈</string>
-    <string name="switch_vibrate_sub">触发成功时提供清脆触觉点击震动</string>
-    <string name="btn_test_vis">测试 VISTrigger</string>
+    <string name="switch_vibrate_sub">强制终止陆版助理并唤起 Gemini 时提供触觉震动反馈</string>
+    <string name="btn_test_vis">测试启动 Gemini</string>
     <string name="btn_test_full">测试完整拦截流程</string>
 
-    <!-- ROM Presets & Keywords -->
     <string name="preset_section_title">陆版 ROM 品牌预设与关键字设置</string>
     <string name="preset_quick_label">一键套用品牌预设值：</string>
     <string name="preset_all">三品牌通用预设</string>
@@ -70,14 +63,12 @@
     <string name="preset_xiaomi">小米 (小爱同学)</string>
     <string name="field_notif_keywords">语音收音通知关键字 (逗号分隔)</string>
     <string name="field_target_packages">强制关闭陆版助理包名 (逗号分隔)</string>
-    <string name="slider_delay_label">强制关闭后延迟启动 AI：%1$d ms</string>
+    <string name="slider_delay_label">强制终止后延迟启动 Gemini：%1$d ms</string>
 
-    <!-- Logs -->
     <string name="log_section_title">拦截执行记录</string>
     <string name="btn_clear">清除</string>
     <string name="log_empty">暂无拦截记录</string>
 
-    <!-- About & Update -->
     <string name="about_section_title">关于与版本更新</string>
     <string name="about_version_fixed">当前版本：v%1$s（固定签名，可直接覆盖更新）</string>
     <string name="btn_about_github">关于我 / GitHub</string>
@@ -87,7 +78,7 @@
     <string name="toast_update_failed">检查更新失败：%1$s</string>
 
     <string name="dialog_about_title">关于 陆版语音呼唤拦截 (CN Voice Intercept)</string>
-    <string name="dialog_about_body">作者 / Author：dx9901mk5\n版本 / Version：v%1$s\n\n[中文]\n专为 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陆版 CN ROM 打造的语音唤醒拦截工具。当通过语音呼喊陆版助理时，利用 Shizuku 瞬间强制关闭陆版助理并通过 VISTrigger 唤起 Gemini 圈选／浮层窗口（或自选 AI App），且不干涉平时手动点开陆版助理使用。\n\n[English]\nBuilt for vivo (OriginOS), OPPO (ColorOS), and Xiaomi (HyperOS) Mainland China ROMs. Uses Shizuku to intercept voice wake-up calls, force-stop the stock Chinese assistant, and launch Google Gemini (via VISTrigger) or your chosen AI app—without interfering with manual app launches.</string>
+    <string name="dialog_about_body">作者 / Author：dx9901mk5\n版本 / Version：v%1$s\n\n[中文]\n专为 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陆版 CN ROM 打造的语音唤醒拦截工具。当通过语音呼喊陆版助理时，利用 Shizuku 瞬间强制终止陆版助理并直接启动 Gemini 圈选／浮层窗口（或自选 AI App），且不干涉平时手动点开陆版助理使用。\n\n[English]\nBuilt for vivo (OriginOS), OPPO (ColorOS), and Xiaomi (HyperOS) Mainland China ROMs. Uses Shizuku to intercept voice wake-up calls, force-stop the stock Chinese assistant, and directly launch Google Gemini or your chosen AI app—without interfering with manual app launches.</string>
     <string name="btn_open_github">前往 GitHub 项目页</string>
     <string name="btn_close">关闭</string>
 
@@ -98,10 +89,9 @@
     <string name="btn_download_now">立即下载更新</string>
     <string name="btn_later">稍后再说</string>
 
-    <!-- Foreground & Update Notifications -->
     <string name="fgs_channel_name">语音拦截常驻服务</string>
     <string name="fgs_notif_title">陆版语音拦截运行中</string>
-    <string name="fgs_notif_text">待机拦截陆版语音唤醒并切换至 Gemini</string>
+    <string name="fgs_notif_text">待机拦截陆版语音唤醒并启动 Gemini</string>
     <string name="update_channel_name">版本更新通知</string>
     <string name="update_notif_title">发现新版本 v%1$s</string>
     <string name="update_notif_text">当前版本 v%1$s，点击下载更新（固定签名可直接覆盖安装）</string>

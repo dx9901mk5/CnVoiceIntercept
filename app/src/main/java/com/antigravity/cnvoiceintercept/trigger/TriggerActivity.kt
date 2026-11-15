@@ -20,7 +20,7 @@ class TriggerActivity : ComponentActivity() {
         val vibrate = AppPrefs.isVibrateEnabled(this)
         val ok = VisTrigger.trigger(this, vibrate)
         if (ok) {
-            InterceptLogStore.add("VISTrigger 成功喚起 Gemini 視窗")
+            InterceptLogStore.add("已成功啟動 Gemini 視窗" + if (vibrate) " (含震動回饋)" else "")
         } else {
             Toast.makeText(this, getString(R.string.trigger_failed), Toast.LENGTH_SHORT).show()
         }

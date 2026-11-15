@@ -13,6 +13,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * 攔截協調器：
+ * 流程：偵測到語音呼喊收音通知 → 透過 Shizuku 強制終止陸版語音助理 → 延遲緩衝 → 啟動 Gemini（含震動回饋）或自選 AI App。
+ * （已移除返回鍵動作，直接以 Shizuku force-stop 強制終止陸版助理）
+ */
 object InterceptCoordinator {
     private const val COOLDOWN_MS = 1500L
 
@@ -51,12 +56,9 @@ object InterceptCoordinator {
         scope.launch {
             InterceptLogStore.add("語音喚醒攔截 [$source] ${detectedPackage ?: ""}".trim())
 
+            // 1. 透過 Shizuku 直接強制終止陸版助理（不送返回鍵）
             val shizuku = ShizukuController.service
             if (shizuku != null) {
-                if (AppPrefs.isPressBackFirst(context)) {
-                    runCatching { shizuku.pressBack() }
-                }
-
                 val targets = buildSet {
                     addAll(AppPrefs.getTargetPackagesList(context))
                     if (!detectedPackage.isNullOrBlank()) {
@@ -67,18 +69,20 @@ object InterceptCoordinator {
                 for (pkg in targets) {
                     val killed = runCatching { shizuku.forceStopPackage(pkg) }.getOrDefault(false)
                     if (killed) {
-                        InterceptLogStore.add("強制關閉 $pkg -> 成功")
+                        InterceptLogStore.add("強制終止 $pkg -> 成功")
                     }
                 }
             } else {
-                InterceptLogStore.add("警告：Shizuku UserService 未連線，無法強制關閉陸版助理")
+                InterceptLogStore.add("警告：Shizuku UserService 未連線，無法強制終止陸版助理")
             }
 
+            // 2. 延遲緩衝，等待系統釋放麥克風與焦點
             val delayMs = AppPrefs.getDelayMs(context)
             if (delayMs > 0) {
                 delay(delayMs)
             }
 
+            // 3. 啟動 Gemini（含震動回饋）或使用者指定的 AI App
             val launchMode = AppPrefs.getLaunchMode(context)
             if (launchMode == AppPrefs.LAUNCH_MODE_CUSTOM_APP) {
                 val customPkg = AppPrefs.getCustomAiPackage(context)
@@ -107,7 +111,7 @@ object InterceptCoordinator {
                     }
                 }
             } else {
-                // 預設：透過 VISTrigger 方法喚起 Gemini 浮層／圈選對話視窗
+                // 預設：啟動 Gemini 浮層／圈選對話視窗（TriggerActivity 內含震動回饋）
                 val launchedViaShizuku = if (shizuku != null) {
                     runCatching {
                         shizuku.startActivityAsShell(
@@ -126,7 +130,7 @@ object InterceptCoordinator {
                         }
                         context.startActivity(intent)
                     }.onFailure {
-                        InterceptLogStore.add("啟動 TriggerActivity 失敗: ${it.message}")
+                        InterceptLogStore.add("啟動 Gemini 失敗: ${it.message}")
                     }
                 }
             }

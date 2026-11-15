@@ -2,7 +2,7 @@
     <string name="app_name">CN Voice Intercept</string>
     <string name="app_subtitle">vivo / OPPO / Xiaomi CN ROM Voice Wakeup to Gemini</string>
     <string name="notification_listener_label">CN Voice Assistant Interceptor</string>
-    <string name="trigger_failed">VISTrigger failed. Please set Google as Default Digital Assistant and select Gemini.</string>
+    <string name="trigger_failed">Failed to launch Gemini. Please set Google as Default Digital Assistant and select Gemini.</string>
 
     <string name="btn_about_short">About</string>
     <string name="btn_lang_short">Lang</string>
@@ -14,7 +14,7 @@
 
     <!-- Step 1: Default Assistant -->
     <string name="step1_title">Step 1: Default Digital Assistant</string>
-    <string name="step1_desc">Before using VISTrigger to summon the Gemini overlay / Circle to Search window, please set Google as your system "Default digital assistant app" (and choose Gemini inside Google).</string>
+    <string name="step1_desc">Before launching the Gemini overlay / Circle to Search window, please set Google as your system "Default digital assistant app" (and choose Gemini inside Google).</string>
     <string name="step1_btn">Open Android Default Assistant Settings</string>
 
     <!-- Step 2: Shizuku & ADB Permissions -->
@@ -38,8 +38,8 @@
 
     <!-- Target AI Assistant -->
     <string name="ai_section_title">Target AI Assistant After Interception</string>
-    <string name="ai_vis_title">Gemini Overlay / Circle to Search (VISTrigger - Default)</string>
-    <string name="ai_vis_desc">Calls IVoiceInteractionManagerService.showSessionFromSession directly via Binder to pop up the Gemini overlay without leaving your current screen.</string>
+    <string name="ai_vis_title">Launch Gemini (Overlay / Circle to Search - Default)</string>
+    <string name="ai_vis_desc">Directly invokes the system voice interaction session to pop up the Gemini overlay without leaving your current screen.</string>
     <string name="ai_custom_title">Launch a Custom AI App Instead</string>
     <string name="ai_custom_current">Selected: %1$s (%2$s)</string>
     <string name="ai_quick_pick_label">Quick Select Popular AI Apps:</string>
@@ -51,14 +51,12 @@
 
     <!-- Interception Controls -->
     <string name="control_section_title">Voice Wake-Up Interception Control</string>
-    <string name="control_voice_only_notice">💡 Voice Wake-Up Only (Manual App Launch Untouched): Interception triggers ONLY when a voice wake-up recording notification (e.g. "收音 (藍心小V)") appears. Opening the stock Chinese assistant manually from your home screen to type or use built-in features is never blocked!</string>
+    <string name="control_voice_only_notice">💡 Smart Voice vs. Manual Distinction: Interception triggers ONLY when a voice wake-up recording notification (e.g. "收音 (藍心小V)", OPPO Breeno, or Xiaomi XiaoAi) appears. Opening the stock Chinese assistant manually from your home screen to type or use built-in features is never blocked!</string>
     <string name="switch_enable_title">Enable Voice Wake-Up Interception</string>
-    <string name="switch_enable_sub">Force-stop stock CN voice assistant on voice wake-up and launch target AI</string>
-    <string name="switch_back_title">Send Back Key Before Force-Stop</string>
-    <string name="switch_back_sub">Dismisses floating voice bar before killing the package</string>
-    <string name="switch_vibrate_title">Haptic Feedback on Trigger</string>
+    <string name="switch_enable_sub">Force-stop stock CN voice assistant via Shizuku and launch Gemini</string>
+    <string name="switch_vibrate_title">Haptic Feedback When Launching Gemini</string>
     <string name="switch_vibrate_sub">Vibrate with a crisp click when Gemini is summoned</string>
-    <string name="btn_test_vis">Test VISTrigger</string>
+    <string name="btn_test_vis">Test Launch Gemini</string>
     <string name="btn_test_full">Test Full Intercept</string>
 
     <!-- ROM Presets & Keywords -->
@@ -70,7 +68,7 @@
     <string name="preset_xiaomi">Xiaomi (XiaoAi)</string>
     <string name="field_notif_keywords">Voice Recording Notification Keywords (comma-separated)</string>
     <string name="field_target_packages">CN Assistant Packages to Force-Stop (comma-separated)</string>
-    <string name="slider_delay_label">Delay Before Launching AI After Force-Stop: %1$d ms</string>
+    <string name="slider_delay_label">Delay Before Launching Gemini After Force-Stop: %1$d ms</string>
 
     <!-- Logs -->
     <string name="log_section_title">Interception Activity Log</string>
@@ -87,7 +85,7 @@
     <string name="toast_update_failed">Update check failed: %1$s</string>
 
     <string name="dialog_about_title">About CN Voice Intercept (陸版語音呼喚攔截)</string>
-    <string name="dialog_about_body">Author: dx9901mk5\nVersion: v%1$s\n\n[中文]\n專為 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陸版 CN ROM 打造的語音喚醒攔截工具。透過語音呼喊陸版助理時，利用 Shizuku 瞬間強制關閉陸版助理並以 VISTrigger 喚起 Gemini（或自選 AI App），不干涉手動點開陸版助理直接使用。\n\n[English]\nBuilt for vivo (OriginOS), OPPO (ColorOS), and Xiaomi (HyperOS) Mainland China ROMs. Uses Shizuku to intercept voice wake-up calls, force-stop the stock Chinese assistant, and launch Google Gemini (via VISTrigger) or your chosen AI app—without interfering with manual app launches.</string>
+    <string name="dialog_about_body">Author: dx9901mk5\nVersion: v%1$s\n\n[中文]\n專為 vivo (OriginOS)、OPPO (ColorOS)、小米 (HyperOS) 陸版 CN ROM 打造的語音喚醒攔截工具。當透過語音呼喊陸版助理時，利用 Shizuku 瞬間強制終止陸版助理並直接啟動 Gemini 圈選／浮層視窗（或自選 AI App），且不干涉平時手動點開陸版助理使用。\n\n[English]\nBuilt for vivo (OriginOS), OPPO (ColorOS), and Xiaomi (HyperOS) Mainland China ROMs. Uses Shizuku to intercept voice wake-up calls, force-stop the stock Chinese assistant, and directly launch Google Gemini or your chosen AI app—without interfering with manual app launches.</string>
     <string name="btn_open_github">Open GitHub Repository</string>
     <string name="btn_close">Close</string>
 
@@ -101,7 +99,7 @@
     <!-- Foreground & Update Notifications -->
     <string name="fgs_channel_name">Voice Interception Keep-Alive</string>
     <string name="fgs_notif_title">CN Voice Intercept Active</string>
-    <string name="fgs_notif_text">Ready to intercept CN voice wake-up and switch to Gemini</string>
+    <string name="fgs_notif_text">Ready to intercept CN voice wake-up and launch Gemini</string>
     <string name="update_channel_name">App Update Notifications</string>
     <string name="update_notif_title">New Update Available: v%1$s</string>
     <string name="update_notif_text">Current v%1$s. Tap to download APK (Fixed signature supports direct overwrite install).</string>

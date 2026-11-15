@@ -13,14 +13,11 @@ import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 /**
- * 整合自 parallelcc/MiCTS (VISTrigger_2.6) 的核心喚起方法：
- * 直接透過 Binder 呼叫系統隱藏服務 IVoiceInteractionManagerService.showSessionFromSession，
- * 繞過已失效或被陸版 ROM 攔截的 android.intent.action.VOICE_COMMAND。
+ * 透過 Binder 呼叫系統語音互動服務 IVoiceInteractionManagerService.showSessionFromSession，
+ * 繞過陸版 ROM 攔截直接啟動系統預設數位助理（Google Gemini）浮層與圈選視窗。
  */
 object VisTrigger {
-    private const val TAG = "VisTrigger"
-
-    // VoiceInteractionSession flags: SHOW_WITH_ASSIST (1) | SHOW_WITH_SCREENSHOT (2) | 4 = 7
+    private const val TAG = "GeminiTrigger"
     private const val VIS_SHOW_FLAGS = 7
 
     @SuppressLint("PrivateApi")
@@ -57,7 +54,7 @@ object VisTrigger {
             }
         }.onFailure { e ->
             Log.e(TAG, "showSessionFromSession failed", e)
-            InterceptLogStore.add("VISTrigger 失敗: ${e.javaClass.simpleName}: ${e.message}")
+            InterceptLogStore.add("啟動 Gemini 失敗: ${e.javaClass.simpleName}: ${e.message}")
         }.getOrDefault(false)
 
         if (result && vibrate && context != null) {
