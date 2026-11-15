@@ -1,0 +1,4 @@
+-keep class com.antigravity.cnvoiceintercept.shizuku.PrivilegedService { *; }
+-keep class com.antigravity.cnvoiceintercept.shizuku.IPrivilegedService** { *; }
+-keep class com.antigravity.cnvoiceintercept.shizuku.ITaskCallback** { *; }
+-keep class org.lsposed.hiddenapibypass.** { *; }

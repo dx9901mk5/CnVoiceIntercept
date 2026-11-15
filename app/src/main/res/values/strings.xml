@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">陸版語音攔截</string>
+    <string name="notification_listener_label">陸版語音助理攔截監聽</string>
+    <string name="trigger_failed">VISTrigger 喚起失敗，請確認已將 Google 設為預設數位助理且已選用 Gemini</string>
+</resources>
