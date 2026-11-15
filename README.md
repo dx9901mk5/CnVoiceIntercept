@@ -30,6 +30,12 @@
    - 內建 GitHub Releases 更新檢查與系統通知提醒。
    - 採用**固定簽名（Fixed Signature）**，後續下載新版 APK 可直接覆蓋安裝，無需解除安裝舊版。
 
+### 介面截圖（繁體中文）
+
+| 步驟設定與單一助理鎖定 | 語音呼喚攔截與極速直連偵測 |
+| :---: | :---: |
+| <img src="docs/images/screenshot-zh-1.jpg" width="320" alt="步驟設定與鎖定陸版助理"> | <img src="docs/images/screenshot-zh-2.jpg" width="320" alt="語音呼喚攔截控制"> |
+
 ### 推薦搭配安裝工具（支援 Shizuku 的檔案管理器／安裝器）
 陸版 CN ROM（特別是 vivo OriginOS、OPPO ColorOS 與小米 HyperOS）在安裝或更新第三方 APK 時，常會跳出原廠帳號密碼驗證、安全風險掃描或高風險攔截。**強烈建議搭配以下支援 Shizuku 授權安裝的檔案管理器或安裝器**，即可直接繞過陸版系統安裝器限制、一鍵覆蓋更新：
 
@@ -68,6 +74,12 @@ On Chinese ROMs, hardware hotword detection ("XiaoV", "XiaoBu", "XiaoAi") is har
    - Full **Traditional Chinese, Simplified Chinese, and English** UI with Material You dynamic dark/light theme support.
    - Built-in GitHub Releases update checker with system notification alerts and an "About Me / GitHub" dialog.
    - Signed with a **fixed cryptographic key** so future updates install directly over existing versions without uninstalling.
+
+### App Screenshots (English)
+
+| Setup Steps & Pinned Assistant | Voice Interception & Direct Wake-Up Control |
+| :---: | :---: |
+| <img src="docs/images/screenshot-en-1.jpg" width="320" alt="Setup Steps & Shizuku Permissions"> | <img src="docs/images/screenshot-en-2.jpg" width="320" alt="Voice Wake-Up Interception Control"> |
 
 ### Recommended Shizuku-Powered File Managers / Installers
 Chinese ROMs (OriginOS, ColorOS, HyperOS) frequently show account password prompts or security blocks when sideloading or updating APKs. **We strongly recommend installing and updating APKs using a Shizuku-compatible file manager or package installer**:
