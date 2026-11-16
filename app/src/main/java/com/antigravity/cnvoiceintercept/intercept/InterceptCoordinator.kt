@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
  * 3. 極短緩衝後直接啟動 Gemini（含震動回饋）或自選 AI App。
  */
 object InterceptCoordinator {
-    private const val COOLDOWN_MS = 1200L
+    private const val COOLDOWN_MS = 3000L
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 

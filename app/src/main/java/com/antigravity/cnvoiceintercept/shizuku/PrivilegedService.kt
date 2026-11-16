@@ -163,6 +163,7 @@ class PrivilegedService : IPrivilegedService.Stub() {
      */
     override fun startTaskWatch(targetPackages: MutableList<String>, callback: ITaskCallback): Boolean {
         stopTaskWatch()
+        cleanupSiblingPrivilegedProcesses()
         val targets = targetPackages.map { it.trim() }.filter { it.isNotEmpty() }
         if (targets.isEmpty()) return false
         val primaryPkg = targets.first()
@@ -179,8 +180,8 @@ class PrivilegedService : IPrivilegedService.Stub() {
                     var line: String? = reader.readLine()
                     while (watchRunning && line != null) {
                         val now = System.currentTimeMillis()
-                        // 略過剛啟動時的歷史首行
-                        if (now - startMs > 180L && now - lastWakeupKillTimeMs > 1100L) {
+                        // 略過剛啟動時的歷史首行，並以 3 秒冷卻防止同一次喚醒的後續事件（如 ForegroundService / 重試）二次觸發
+                        if (now - startMs > 180L && now - lastWakeupKillTimeMs > WAKEUP_COOLDOWN_MS) {
                             val match = matchVoiceWakeupEvent(line, targets, primaryPkg)
                             if (match != null) {
                                 lastWakeupKillTimeMs = now
@@ -216,6 +217,7 @@ class PrivilegedService : IPrivilegedService.Stub() {
         primaryPkg: String
     ): Pair<String, String>? {
         // 1. 語音喚醒專屬浮層視窗 (vivo CopilotPanelWindow 等，不會在手動點開主程式 Activity 時出現)
+        // 注意：不應在 WakeupService 剛 am_proc_start 時秒殺，否則 com.vivo.voicewakeup 會判定交接失敗而立刻重試並進入冷卻保護
         if ((line.contains("input_focus") || line.contains("viewroot_draw_event")) &&
             !line.contains("Focus leaving") && !line.contains("focus=false")
         ) {
@@ -225,20 +227,7 @@ class PrivilegedService : IPrivilegedService.Stub() {
             }
         }
 
-        // 2. 語音喚醒專屬背景服務啟動 (am_proc_start started-service WakeupService / voicewakeup / voicetrigger)
-        if (line.contains("am_proc_start") && line.contains("started-service")) {
-            val matchedPkg = targets.find { line.contains(it) }
-            if (matchedPkg != null && (
-                    line.contains("Wakeup", ignoreCase = true) ||
-                        line.contains("voicewakeup", ignoreCase = true) ||
-                        line.contains("voicetrigger", ignoreCase = true)
-                    )
-            ) {
-                return matchedPkg to "底層語音喚醒服務(WakeupService)"
-            }
-        }
-
-        // 3. 陸版語音助理啟動麥克風收音 ForegroundService (type=128 MICROPHONE)
+        // 2. 陸版語音助理啟動麥克風收音 ForegroundService (type=128 MICROPHONE)
         // 若使用者並非手動打開該陸版助理的全螢幕主畫面 Activity，則必為語音呼喊喚醒！
         if (line.contains("am_foreground_service_start")) {
             val matchedPkg = targets.find { line.contains(it) }
@@ -278,6 +267,22 @@ class PrivilegedService : IPrivilegedService.Stub() {
         }.getOrNull()
     }
 
+    private fun cleanupSiblingPrivilegedProcesses() {
+        runCatching {
+            val myPid = android.os.Process.myPid()
+            val proc = Runtime.getRuntime().exec(arrayOf("pidof", "com.antigravity.cnvoiceintercept:privileged"))
+            val out = BufferedReader(InputStreamReader(proc.inputStream)).use { it.readText().trim() }
+            proc.waitFor()
+            val stalePids = out.split(Regex("\\s+"))
+                .mapNotNull { it.toIntOrNull() }
+                .filter { it != myPid }
+            for (pid in stalePids) {
+                runExec(arrayOf("kill", "-9", pid.toString()))
+            }
+            runExec(arrayOf("pkill", "-f", "logcat -b events -T 1"))
+        }
+    }
+
     private fun runExec(cmd: Array<String>): Boolean {
         return runCatching {
             val process = Runtime.getRuntime().exec(cmd)
@@ -289,5 +294,6 @@ class PrivilegedService : IPrivilegedService.Stub() {
 
     companion object {
         private const val TAG = "PrivilegedService"
+        private const val WAKEUP_COOLDOWN_MS = 3000L
     }
 }

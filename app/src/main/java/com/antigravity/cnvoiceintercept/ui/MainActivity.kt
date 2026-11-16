@@ -223,9 +223,6 @@ fun MainScreen() {
     var pinnedPackage by remember { mutableStateOf(AppPrefs.getPinnedPackage(context)) }
     var showDetectDialog by remember { mutableStateOf(!AppPrefs.isAssistantConfirmed(context)) }
 
-    var enabled by remember { mutableStateOf(AppPrefs.isEnabled(context)) }
-    var directWakeup by remember { mutableStateOf(AppPrefs.isDirectWakeupDetectEnabled(context)) }
-    var vibrate by remember { mutableStateOf(AppPrefs.isVibrateEnabled(context)) }
     var targetPackages by remember { mutableStateOf(AppPrefs.getTargetPackagesRaw(context)) }
     var notifKeywords by remember { mutableStateOf(AppPrefs.getNotifKeywordsRaw(context)) }
     var delayMs by remember { mutableFloatStateOf(AppPrefs.getDelayMs(context).toFloat()) }
@@ -666,41 +663,6 @@ fun MainScreen() {
                             modifier = Modifier.padding(12.dp)
                         )
                     }
-
-                    SwitchRow(
-                        title = stringResource(R.string.switch_enable_title),
-                        subtitle = stringResource(R.string.switch_enable_sub),
-                        checked = enabled,
-                        onCheckedChange = {
-                            enabled = it
-                            AppPrefs.setEnabled(context, it)
-                            if (it) InterceptKeepAliveService.start(context) else InterceptKeepAliveService.stop(context)
-                            ShizukuController.refreshTaskWatch()
-                        }
-                    )
-
-                    SwitchRow(
-                        title = stringResource(R.string.switch_direct_wakeup_title),
-                        subtitle = stringResource(R.string.switch_direct_wakeup_sub),
-                        checked = directWakeup,
-                        onCheckedChange = {
-                            directWakeup = it
-                            AppPrefs.setDirectWakeupDetectEnabled(context, it)
-                            ShizukuController.refreshTaskWatch()
-                        }
-                    )
-
-                    SwitchRow(
-                        title = stringResource(R.string.switch_vibrate_title),
-                        subtitle = stringResource(R.string.switch_vibrate_sub),
-                        checked = vibrate,
-                        onCheckedChange = {
-                            vibrate = it
-                            AppPrefs.setVibrateEnabled(context, it)
-                        }
-                    )
-
-                    HorizontalDivider()
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
