@@ -93,6 +93,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.antigravity.cnvoiceintercept.BuildConfig
 import com.antigravity.cnvoiceintercept.R
+import com.antigravity.cnvoiceintercept.config.AppExpiry
 import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 import com.antigravity.cnvoiceintercept.intercept.AssistantNotificationListener
@@ -139,6 +140,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        if (AppExpiry.isExpired()) {
+            InterceptKeepAliveService.stop(this)
+            setContent {
+                CnVoiceInterceptM3Theme {
+                    ExpiredScreen()
+                }
+            }
+            return
+        }
+
         AppPrefs.ensurePinnedAssistantInitialized(this)
         ShizukuController.init(this)
         if (AppPrefs.isEnabled(this)) {
@@ -161,7 +172,53 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        ShizukuController.refreshStateAndBind()
+        if (!AppExpiry.isExpired()) {
+            ShizukuController.refreshStateAndBind()
+        }
+    }
+}
+
+@Composable
+private fun ExpiredScreen() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ElevatedCard(
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Text(
+                        text = "此版本已過期失效",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "本版本使用期限至 2026/12/05 止，目前已無法繼續使用，請更新或聯繫開發者取得新版。",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }
 

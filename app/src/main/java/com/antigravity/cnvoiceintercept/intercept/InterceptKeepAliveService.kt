@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.antigravity.cnvoiceintercept.R
+import com.antigravity.cnvoiceintercept.config.AppExpiry
 import com.antigravity.cnvoiceintercept.shizuku.ShizukuController
 import com.antigravity.cnvoiceintercept.ui.MainActivity
 
@@ -18,12 +19,20 @@ class InterceptKeepAliveService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        if (AppExpiry.isExpired()) {
+            stopSelf()
+            return
+        }
         createChannel()
         startForeground(NOTIFICATION_ID, buildNotification())
         ShizukuController.init(applicationContext)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (AppExpiry.isExpired()) {
+            stopSelf()
+            return START_NOT_STICKY
+        }
         ShizukuController.refreshStateAndBind()
         return START_STICKY
     }

@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import com.antigravity.cnvoiceintercept.R
+import com.antigravity.cnvoiceintercept.config.AppExpiry
 import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 
@@ -23,6 +24,10 @@ class TriggerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (AppExpiry.isExpired()) {
+            finish()
+            return
+        }
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false

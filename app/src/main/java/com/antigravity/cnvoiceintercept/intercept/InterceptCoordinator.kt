@@ -3,6 +3,7 @@ package com.antigravity.cnvoiceintercept.intercept
 import android.content.Context
 import android.content.Intent
 import com.antigravity.cnvoiceintercept.BuildConfig
+import com.antigravity.cnvoiceintercept.config.AppExpiry
 import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 import com.antigravity.cnvoiceintercept.shizuku.ShizukuController
@@ -35,6 +36,7 @@ object InterceptCoordinator {
         detectedPackage: String? = null,
         alreadyKilled: Boolean = false
     ) {
+        if (AppExpiry.isExpired()) return
         if (!AppPrefs.isEnabled(context)) return
 
         val now = System.currentTimeMillis()
@@ -49,6 +51,7 @@ object InterceptCoordinator {
     }
 
     fun runManualTestPipeline(context: Context) {
+        if (AppExpiry.isExpired()) return
         executeInterceptPipeline(
             context = context.applicationContext,
             source = "手動完整測試",

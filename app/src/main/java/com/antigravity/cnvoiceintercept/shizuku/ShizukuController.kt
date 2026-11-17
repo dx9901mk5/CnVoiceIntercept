@@ -6,6 +6,7 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.IBinder
 import com.antigravity.cnvoiceintercept.BuildConfig
+import com.antigravity.cnvoiceintercept.config.AppExpiry
 import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.config.InterceptLogStore
 import com.antigravity.cnvoiceintercept.intercept.AssistantNotificationListener
@@ -117,6 +118,7 @@ object ShizukuController {
     }
 
     fun refreshStateAndBind() {
+        if (AppExpiry.isExpired()) return
         val alive = runCatching { Shizuku.pingBinder() }.getOrDefault(false)
         val granted = if (alive) {
             runCatching { Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED }.getOrDefault(false)
@@ -179,7 +181,7 @@ object ShizukuController {
     fun refreshTaskWatch() {
         val ctx = appContext ?: return
         val svc = service ?: return
-        val enabled = AppPrefs.isEnabled(ctx) && AppPrefs.isDirectWakeupDetectEnabled(ctx)
+        val enabled = !AppExpiry.isExpired() && AppPrefs.isEnabled(ctx) && AppPrefs.isDirectWakeupDetectEnabled(ctx)
         runCatching {
             if (enabled) {
                 val pkgs = AppPrefs.getTargetPackagesList(ctx)

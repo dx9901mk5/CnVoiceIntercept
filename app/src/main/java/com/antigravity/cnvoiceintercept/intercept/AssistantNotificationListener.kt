@@ -6,6 +6,7 @@ import android.content.Context
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import com.antigravity.cnvoiceintercept.config.AppExpiry
 import com.antigravity.cnvoiceintercept.config.AppPrefs
 import com.antigravity.cnvoiceintercept.shizuku.ShizukuController
 
@@ -17,11 +18,13 @@ class AssistantNotificationListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        if (AppExpiry.isExpired()) return
         ShizukuController.init(applicationContext)
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
         if (sbn == null) return
+        if (AppExpiry.isExpired()) return
         if (!AppPrefs.isEnabled(applicationContext)) return
         if (sbn.packageName == packageName) return
 
