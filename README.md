@@ -2,6 +2,15 @@
 
 [繁體中文](#繁體中文說明) | [English](#english-description)
 
+> **📢 專案停更與使用到期公告 / End-of-Life & Expiration Notice**
+> - **使用到期日**：本專案最終版（`v1.5.1`）僅可使用至 **2026-12-01**（台灣時間 `2026-12-02 00:00` 起停止運作），**使用到期日後將從 GitHub Releases 移除 APK 檔案**。
+> - **整合功能新儲存庫**：本工具功能已全面整合至全新專案 👉 **[Android-CN-System-Enhancer](https://github.com/dx9901mk5/Android-CN-System-Enhancer)**，歡迎前往使用！
+>
+> ---
+>
+> - **Expiration Date**: The final release (`v1.5.1`) is valid through **2026-12-01** (stops working at **2026-12-02 00:00 UTC+8 / Asia/Taipei**). **The APK will be removed from GitHub Releases after the expiration date.**
+> - **Integrated Repository**: All features have been integrated into 👉 **[Android-CN-System-Enhancer](https://github.com/dx9901mk5/Android-CN-System-Enhancer)**. Please use the new repository for future updates!
+
 ---
 
 ## 繁體中文說明
