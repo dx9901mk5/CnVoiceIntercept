@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 
 object AppExpiry {
     private val EXPIRY_EPOCH_MS: Long by lazy {
-        ZonedDateTime.of(2026, 12, 6, 0, 0, 0, 0, ZoneId.of("Asia/Taipei"))
+        ZonedDateTime.of(2026, 12, 2, 0, 0, 0, 0, ZoneId.of("Asia/Taipei"))
             .toInstant()
             .toEpochMilli()
     }

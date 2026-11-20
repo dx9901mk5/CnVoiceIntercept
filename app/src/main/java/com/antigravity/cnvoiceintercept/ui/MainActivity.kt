@@ -207,12 +207,12 @@ private fun ExpiredScreen() {
                         modifier = Modifier.size(48.dp)
                     )
                     Text(
-                        text = "此版本已過期失效",
+                        text = "此版本已終止服務",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "本版本使用期限至 2026/12/05 止，目前已無法繼續使用，請更新或聯繫開發者取得新版。",
+                        text = "本版本為最終版本，使用期限至 2026/12/01 止，目前已完全終止服務，無法繼續使用。",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
